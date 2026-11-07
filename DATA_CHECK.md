@@ -10,6 +10,24 @@ SmarterRoads' traffic data or a traffic company's API.
 
 ---
 
+## Update: SmarterRoads account is set up (Nov 7)
+
+The owner registered. The datasets that matter for us, from the catalog:
+
+| Dataset | Format | Updates | What it gives us |
+|---|---|---|---|
+| **Tolling and Trip Pricing I-66** | XML | every 6 min | I-66 **inside** the Beltway only. Shows $0 when tolling is off (eastbound tolls 5:30–9:30 AM, westbound 3–7 PM, weekdays). |
+| **Tolling and Trip Pricing I-95 I-495** | CSV | every 10 min | Transurban's 95, 395 and 495 Express Lanes (check that 395 zones are in it). |
+| **Travel Times, Travel Time Segments** | XML / TMDD | every minute | VDOT's own travel times by road segment. **Key question:** does it have separate segments for the express lanes? If yes, minutes saved is free. |
+| **Traffic Sensor Stations** | XML / TMDD | every minute | Speeds from road sensors. Backup for travel times if the express lanes have their own sensors. |
+| **DMS Status (Active)** | XML | every minute | What the electronic road signs say right now. Worth checking for I-66 outside: if its toll price signs report through VDOT, this could fill the gap. |
+| Tolling and Trip Pricing I-64 | XML | 10 min | Hampton Roads. Not DMV; ignore. |
+
+Not in the catalog: **I-66 outside the Beltway** tolls and INRIX travel times.
+
+**Our job's timing:** fetch every 5 minutes. That catches every I-66 update (6 min) and every 95/495 update (10 min)
+without wasting requests.
+
 ## Toll prices, road by road
 
 | Road | Source | Status | Notes |
