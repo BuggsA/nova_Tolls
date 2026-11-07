@@ -52,6 +52,45 @@ The question a driver actually has is: **"Is it worth it right now, for my trip?
 - Home shows them as compact cards (*Morning*, *Evening*, *Mom's house*), each with its verdict.
 - The trip that fits the time of day goes on top: morning trips before noon, evening trips after.
 
+### Your scoreboard: what your choices saved you
+
+Under the verdict, two buttons: **I took it** · **I skipped it**. One tap logs the trip with the numbers shown
+at that moment (toll, minutes saved). Undo for a few seconds; edit or delete later.
+
+Each choice counts one of two ways:
+- **Took the toll:** you *bought time*: **+14 min saved** for $6.50.
+- **Skipped it:** you *kept money*: **$6.50 saved**, for 14 extra minutes.
+
+```
+ Your tolls · November                                   Month ▾
+┌──────────────────────────┬──────────────────────────┐
+│  $84.50 kept             │  3 h 10 min bought       │
+│  skipped 13 times        │  took it 9 times, $61    │
+└──────────────────────────┴──────────────────────────┘
+   You paid 32¢ a minute on average (your line: 50¢)
+   Smart calls: 19 of 22 (86%)  ·  Streak: 6 in a row
+   ▁▃▅▂▆▄▇  by week
+```
+
+- **Ranges:** this week, this month, this year, all time. Each shows totals and averages: average toll paid,
+  average minutes saved per trip, average **cost per minute bought**, money kept per month.
+- **Smart calls:** how often your choice matched the verdict. Skipping a "Skip it" counts, and so does taking a
+  "Take it." A streak counter for consecutive smart calls. Light and encouraging; never scolding. Taking an
+  expensive toll when you're running late isn't wrong, so the user can mark a trip **"Had to"** and it doesn't
+  count against them.
+- **Milestones**, shown once with a small animation like the schools site's big moments: *First $100 kept*,
+  *10 hours bought back*, *Skipped a $30+ toll*, *A month of smart calls*.
+- **Year in review** (every December): "In 2027 you kept $612 and bought back 41 hours. Your priciest
+  minute: $2.80 on March 3." A shareable card. This is the most likely thing to spread on social media.
+- **Comparisons that make the numbers mean something:** "$84 kept ≈ a tank and a half of gas,"
+  "3 hours bought ≈ two movies."
+
+Honest numbers: each log uses the toll and travel times **when you checked**, and the screen says they're
+estimates. If you check at 7:40 and log at 8:05, it uses the 7:40 numbers, because that's when you decided.
+
+Stored in the browser like saved trips, no account. Later: an **export / move to a new phone** code (a short link that
+copies your history), so people don't lose a year of stats when they switch phones.
+
 ### Setting up a trip (under 30 seconds, no map needed)
 1. Pick the road: **I-66 inside**, **I-66 outside**, **495**, **95**, **395**.
 2. Pick the direction (only the ones open now are highlighted; 95/395 reverse).
@@ -68,6 +107,8 @@ A shareable link for each trip (`/66-east/vienna-to-rosslyn`) means it also work
 | Feature | Why |
 |---|---|
 | **Saved trips, instant answer** | The daily habit. Open it at the door, decide in two seconds. |
+| **Your scoreboard** (money kept, minutes bought, smart calls) | Turns a daily chore into a running score. Logging takes one tap, and the totals grow every week. |
+| **Year in review** | Shareable December card: "I kept $612 and bought back 41 hours." Free advertising. |
 | **"Usually at this time" + best time to leave** | We record the price every few minutes, so after a few weeks we can say *"leave 15 minutes later and it's typically $4 cheaper."* No official tool does this, and it gets better the longer we run. |
 | **Price alerts** (phase 2) | "Tell me when my trip drops under $5" or "…when it's worth it." The schools site's push alerts (no accounts) carry over almost as-is. |
 | **Monthly cost** | "Taking it every weekday this month ≈ $142 and saves ~4.5 hours." An eye-opener people share. |
@@ -142,11 +183,13 @@ Same as the schools site, so it's quick to build and cheap to run:
 **0. Check the data (one afternoon).** Register for SmarterRoads; confirm the I-66 toll feed; test one travel-time source on I-66 express vs regular.
 
 **1. I-66 launch.** Inside + outside the Beltway. Trip setup, saved trips, verdict, cost per minute, your line,
-HOV toggle, "free right now" for I-66 inside off-peak, trip pages, share cards. Start recording history on day one.
+HOV toggle, "free right now" for I-66 inside off-peak, trip pages, share cards, **the scoreboard** (took it / skipped it,
+totals by week, month, year and all time, averages, smart calls). Start recording history on day one.
 
 **2. More roads + history.** 495, 95/395. "Usually at this time," best time to leave, monthly cost, record-toll page.
 
-**3. Alerts.** Price alerts on saved trips (port the push code from the schools site).
+**3. Alerts + rewards.** Price alerts on saved trips (port the push code from the schools site). Milestones,
+streaks, the "move to a new phone" code, and the first Year in review in December.
 
 **4. Extras.** Dulles Toll Road / Greenway price tables, toll comparison pages ("Is the I-66 toll worth it?"), weekly email digest.
 
