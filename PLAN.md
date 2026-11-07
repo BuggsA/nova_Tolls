@@ -54,7 +54,57 @@ The question a driver actually has is: **"Is it worth it right now, for my trip?
 - Home shows them as compact cards (*Morning*, *Evening*, *Mom's house*), each with its verdict.
 - The trip that fits the time of day goes on top: morning trips before noon, evening trips after.
 
-### Your scoreboard: what your choices saved you
+## Design direction: road sign (chosen)
+
+Picked from six options (`mockup/directions.html`). Answers are drawn as real highway signs, and the colors mean
+what they mean on the road:
+- **Green guide sign** = take it ("TAKE IT ↗", "TAKE SOME ↗", "FREE NOW").
+- **Yellow warning sign** = close call (within about 12% of your limit; your call).
+- **White regulatory sign** = stay in the regular lanes.
+- Tolls sit on **black price panels with yellow numbers**, like the real price signs. Route shields mark each road.
+- Everything else: flat white panels with black rules. One typeface (Overpass, a cousin of the highway sign font).
+  No shadows, no pills, no emoji.
+- The scoreboard is a **blue sign** (the color of road service signs).
+
+## Some, all or none: your rule for tolls
+
+Many trips cross more than one toll road (I-66 outside **and** inside the Beltway; 95 **and** 395). One control decides
+all of them, set once:
+
+| Rule | What happens |
+|---|---|
+| **No tolls** | Never pay. The site still shows what each toll would have cost and adds what you kept to the scoreboard. |
+| **Worth it to me** (default) | Each toll is checked **on its own** against your limit: "pay up to 60¢ a minute" (or "$36 an hour"; tap to switch units). Usually ends up as "take some". |
+| **All tolls** | Always take the express lanes; the scoreboard tracks the time it buys. |
+
+- The answer sign sums it up: **"TAKE SOME: take I-66 inside, skip I-66 outside. $6.22 saves 12 min."**
+- Each toll on the trip has its own row: price panel, minutes saved, cost per minute, and **Take it / Skip it** buttons.
+  Tapping one overrides the rule for today only; it's marked "Your pick" with Undo.
+- For tolls further along the trip, the price shown is **what it's likely to be when you get there** ("AT 7:59 $6.22"),
+  from the price history. It refreshes as you get closer.
+
+## Drive mode: the next step, live
+
+Tap **Start driving** and the screen turns into one big sign showing only the **next decision**:
+- **"IN 7 MI · BELTWAY / TAKE EXPRESS ↗ / $6.22 saves 12 min"**, then **"STAY IN EXPRESS"** while you're on it, then the exit.
+- A **Then** line shows the step after that, and a simple strip shows the route with which lanes you'll be in.
+- **It changes by itself** when prices or traffic change: a yellow **"Changed: I-66 inside is now $9.25 for 14 min.
+  No longer worth it."** line, and the sign flips. Nothing to tap while driving.
+- **Voice** (optional) reads each step and each change aloud.
+- At the end: **"You made it. Log it?"** One tap, and the scoreboard updates.
+
+How it works on a website:
+- Your position comes from the phone's location **while the page is open** (phone in a mount). The screen is kept awake.
+  Spoken steps use the phone's built-in voice.
+- Prices and travel times refresh every 2 to 5 minutes from the scheduled job; drive mode checks for new numbers every
+  minute and only speaks up when a decision actually changes.
+- "Usually at this time" and the price-when-you-get-there both come from the recorded history, so they get better
+  every week as traffic patterns shift (school breaks, holidays, new construction).
+- A website can't run in the background or show up on CarPlay / Android Auto. If drive mode is popular, a small app
+  later can add that, plus a notification as you approach each entrance.
+- Safety: big type, high contrast, no taps needed, and a note that the overhead sign's price is the one you pay.
+
+## Your scoreboard: what your choices saved you
 
 Under the verdict, two buttons: **I took it** · **I skipped it**. One tap logs the trip with the numbers shown
 at that moment (toll, minutes saved). Undo for a few seconds; edit or delete later.
@@ -253,7 +303,7 @@ Same as the schools site, so it's quick to build and cheap to run:
 
 **0. Check the data (one afternoon).** Register for SmarterRoads; confirm the I-66 toll feed; test one travel-time source on I-66 express vs regular.
 
-**1. I-66 launch.** Inside + outside the Beltway. Trip setup, saved trips, verdict, cost per minute, your line,
+**1. I-66 launch.** Inside + outside the Beltway. Trip setup, saved trips, the toll rule (no tolls / worth it / all, with per-toll picks), drive mode, cost per minute, your line,
 HOV toggle, "free right now" for I-66 inside off-peak, trip pages, share cards, **the scoreboard** (took it / skipped it,
 totals by week, month, year and all time, averages, smart calls), saved on the server with no sign-in, the quiet
 "keep them safe" passkey / email option, and the Walks for Lucy footer and sponsor strip. Start recording history on day one.

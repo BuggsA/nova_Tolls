@@ -2,851 +2,604 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Overpass:wght@500;700;800&family=Overpass+Mono:wght@600;700&family=Public+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Overpass:wght@500;600;700;800;900&display=swap">
 <style>
-/* Layout: one phone-width column, like an app. Answer first, then detail; bottom tabs for Now / Scoreboard / New trip.
-   Look: highway signage. Overpass (a Highway Gothic cousin) for headings and numbers; the live toll sits on an amber LED sign. */
+/* Layout: one phone-width column. Direction 1, "Road sign": answers are drawn as real highway signs
+   (green = take it, yellow = close call, white = stay in regular lanes), tolls sit on black price panels,
+   everything else is flat white panels with black rules. No shadows, no pills, one typeface. */
 :root {
-  --bg: #eceff3;
-  --surface: #ffffff;
-  --sunk: #f4f6f8;
-  --ink: #121720;
-  --ink-2: #545d6b;
-  --ink-3: #8a919c;
-  --line: #dde2e8;
-  --accent: #1f5ec4;
-  --accent-soft: #e5eefc;
-  --led-bg: #101317;
-  --led: #ffb21a;
-  --led-dim: #5b4416;
-
-  --take: #17734c;
-  --close: #9c5606;
-  --skip: #475266;
-  --free: #1f5ec4;
-  --on-verdict: #ffffff;
-  --verdict-sub: rgba(255,255,255,.82);
-
-  --kept: #17734c;
-  --bought: #1f5ec4;
-
-  --display: "Overpass", "Highway Gothic", "Arial Narrow", system-ui, sans-serif;
-  --mono: "Overpass Mono", ui-monospace, "SF Mono", Menlo, monospace;
-  --body: "Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --r: 16px;
-  --shadow: 0 1px 2px rgba(18,23,32,.06), 0 4px 16px rgba(18,23,32,.05);
+  --bg: #f2f2ed;
+  --panel: #ffffff;
+  --ink: #111111;
+  --ink-2: #4a4a4a;
+  --rule: #111111;
+  --soft: #e4e4dd;
+  --green: #00663a;
+  --blue: #0b4fa3;
+  --yellow: #ffcd00;
+  --price: #ffd400;
+  --sign-black: #111111;
+  --font: "Overpass", "Highway Gothic", "Arial Narrow", Arial, sans-serif;
 }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #0d1014; --surface: #171b21; --sunk: #12161b; --ink: #eaedf1; --ink-2: #a7aeb9; --ink-3: #79818d;
-    --line: #2a3038; --accent: #7aa7ff; --accent-soft: #1b2738; --led-bg: #07090b; --led: #ffb21a; --led-dim: #4a3812;
-    --take: #1b7a52; --close: #a35c0b; --skip: #465163; --free: #2a5fb8; --kept: #3fbf86; --bought: #7aa7ff;
-    --shadow: 0 1px 2px rgba(0,0,0,.4); color-scheme: dark;
-  }
+  :root:not([data-theme="light"]) { --bg: #101010; --panel: #1b1b1b; --ink: #f2f2f2; --ink-2: #b8b8b8; --rule: #d9d9d9; --soft: #2c2c2c; color-scheme: dark; }
 }
-:root[data-theme="dark"] {
-  --bg: #0d1014; --surface: #171b21; --sunk: #12161b; --ink: #eaedf1; --ink-2: #a7aeb9; --ink-3: #79818d;
-  --line: #2a3038; --accent: #7aa7ff; --accent-soft: #1b2738; --led-bg: #07090b; --led: #ffb21a; --led-dim: #4a3812;
-  --take: #1b7a52; --close: #a35c0b; --skip: #465163; --free: #2a5fb8; --kept: #3fbf86; --bought: #7aa7ff;
-  --shadow: 0 1px 2px rgba(0,0,0,.4); color-scheme: dark;
-}
+:root[data-theme="dark"] { --bg: #101010; --panel: #1b1b1b; --ink: #f2f2f2; --ink-2: #b8b8b8; --rule: #d9d9d9; --soft: #2c2c2c; color-scheme: dark; }
 
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 html, body { background: var(--bg); }
-body { color: var(--ink); font: 15px/1.5 var(--body); -webkit-font-smoothing: antialiased; }
+body { color: var(--ink); font: 500 16px/1.45 var(--font); -webkit-font-smoothing: antialiased; }
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
 button, input { font: inherit; color: inherit; }
 button { cursor: pointer; }
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
-a { color: var(--accent); }
+:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+a { color: inherit; }
 .num { font-variant-numeric: tabular-nums; }
 
-.app {
-  max-width: 480px; margin: 0 auto;
-  padding-left: max(16px, env(safe-area-inset-left, 0px));
-  padding-right: max(16px, env(safe-area-inset-right, 0px));
-  padding-block: 0 calc(96px + env(safe-area-inset-bottom, 0px));
-}
+.app { max-width: 460px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 calc(92px + env(safe-area-inset-bottom, 0px)); }
+.view { display: grid; gap: 14px; }
 
-/* Header */
-.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
-  display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 14px 10px; }
-.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); }
-.brand__mark { width: 34px; height: 34px; border-radius: 8px; background: var(--led-bg); display: grid; place-items: center;
-  font: 700 15px/1 var(--mono); color: var(--led); letter-spacing: -.5px; box-shadow: inset 0 0 0 2px #2b3038; }
-.brand__name { font: 800 19px/1 var(--display); letter-spacing: -.2px; display: block; white-space: nowrap; }
-.brand__sub { display: block; font: 600 11.5px/1.2 var(--body); color: var(--ink-3); margin-top: 3px; letter-spacing: .02em; }
-.sample { font: 600 11px/1 var(--body); letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3);
-  border: 1px dashed var(--line); padding: 6px 8px; border-radius: 999px; white-space: nowrap; }
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); display: flex; justify-content: space-between; align-items: center; gap: 10px; padding-block: 14px 10px; }
+.brand { font-weight: 900; font-size: 19px; letter-spacing: -.01em; text-decoration: none; display: flex; align-items: center; gap: 8px; }
+.brand__mark { width: 30px; height: 30px; background: var(--green); color: #fff; border-radius: 6px; display: grid; place-items: center; box-shadow: inset 0 0 0 2px var(--green), inset 0 0 0 4px #fff; font-weight: 900; font-size: 15px; }
+.clock { font-weight: 700; font-size: 14px; color: var(--ink-2); }
 
-.stack { display: grid; gap: 14px; }
-.card { background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow); padding: 16px; min-width: 0; }
-.label { font: 700 11px/1.2 var(--body); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
-h2 { font: 800 17px/1.25 var(--display); margin: 0; text-wrap: balance; }
+.trips { display: flex; gap: 18px; overflow-x: auto; scrollbar-width: none; border-bottom: 2px solid var(--rule); }
+.trips::-webkit-scrollbar { display: none; }
+.trips button { flex: none; border: 0; background: none; padding: 6px 0 8px; font-weight: 700; font-size: 15px; color: var(--ink-2); border-bottom: 4px solid transparent; margin-bottom: -2px; }
+.trips button[aria-current="true"] { color: var(--ink); border-color: var(--ink); }
 
-/* Trip chips */
-.chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
-.chips::-webkit-scrollbar { display: none; }
-.chip { flex: none; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 7px 13px;
-  font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 7px; }
-.chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
-.dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.shield { display: inline-grid; place-items: center; min-width: 30px; height: 30px; padding: 0 4px; background: #fff; color: #111; border: 2px solid #111; border-radius: 4px 4px 14px 14px; font: 900 12px/1 var(--font); flex: none; }
+.shield.md { border-radius: 4px; }
+.route { font-weight: 800; font-size: 18px; line-height: 1.2; }
+.route small { display: block; font-weight: 600; font-size: 14px; color: var(--ink-2); }
 
-.trip-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
-.trip-head__route { font: 700 16px/1.3 var(--display); min-width: 0; }
-.trip-head__road { color: var(--ink-2); font-size: 13px; }
-.trip-head__time { color: var(--ink-3); font-size: 13px; white-space: nowrap; }
+.sign { border-radius: 10px; padding: 4px; }
+.sign > div { border: 3px solid currentColor; border-radius: 7px; padding: 14px 14px 12px; display: grid; gap: 4px; }
+.sign--take, .sign--free { background: var(--green); color: #fff; }
+.sign--close { background: var(--yellow); color: #111; }
+.sign--skip { background: #fff; color: #111; box-shadow: inset 0 0 0 2px #111; }
+.sign__big { font-weight: 900; font-size: 40px; line-height: .95; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.sign__big svg { width: 36px; height: 36px; flex: none; }
+.sign__line { font-weight: 700; font-size: 17px; line-height: 1.25; }
+.sign__foot { font-weight: 700; font-size: 15px; border-top: 2px solid currentColor; padding-top: 8px; margin-top: 6px; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
 
-/* Verdict */
-.verdict { border-radius: var(--r); padding: 18px 18px 16px; color: var(--on-verdict); display: grid; gap: 4px;
-  background: var(--v, var(--take)); transition: background .25s; }
-.verdict__word { font: 800 34px/1 var(--display); letter-spacing: .5px; text-transform: uppercase; }
-.verdict__main { font: 700 20px/1.25 var(--display); }
-.verdict__sub { color: var(--verdict-sub); font-size: 14px; }
+.panel { background: var(--panel); border: 2px solid var(--rule); border-radius: 8px; padding: 14px; display: grid; gap: 12px; min-width: 0; }
+.h { font-weight: 900; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; }
+.modes { display: grid; grid-template-columns: repeat(3, 1fr); border: 2px solid var(--rule); border-radius: 8px; overflow: hidden; }
+.modes button { border: 0; border-left: 2px solid var(--rule); background: var(--panel); padding: 10px 4px; font-weight: 800; font-size: 14.5px; line-height: 1.15; }
+.modes button:first-child { border-left: 0; }
+.modes button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.lineval { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.lineval b { font-weight: 900; font-size: 24px; }
+.unit { border: 2px solid var(--rule); background: none; border-radius: 6px; font-weight: 800; font-size: 13px; padding: 4px 8px; }
+input[type=range] { width: 100%; accent-color: var(--green); margin: 8px 0 4px; }
+.note { color: var(--ink-2); font-size: 14px; line-height: 1.4; margin: 0; }
 
-/* Compare: LED sign + regular lanes */
-.compare { display: grid; gap: 10px; }
-.lane { display: grid; grid-template-columns: 76px 1fr auto; align-items: center; gap: 12px; }
-.lane__name { font: 700 13px/1.2 var(--display); text-transform: uppercase; letter-spacing: .04em; color: var(--ink-2); }
-.lane__bar { height: 10px; border-radius: 6px; background: var(--sunk); overflow: hidden; }
-.lane__bar > i { display: block; height: 100%; border-radius: 6px; background: var(--ink-2); transition: width .3s; }
-.lane__bar.express > i { background: var(--led); }
-.lane__min { font: 700 15px/1 var(--display); min-width: 52px; text-align: right; }
-.led { display: inline-flex; align-items: center; justify-content: space-between; gap: 14px; background: var(--led-bg);
-  border-radius: 10px; padding: 10px 14px; box-shadow: inset 0 0 0 3px #262b33; color: var(--led); width: 100%; }
-.led__where { font: 700 12px/1.25 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--led); opacity: .85; }
-.led__price { font: 700 30px/1 var(--mono); letter-spacing: 1px;
-  text-shadow: 0 0 10px rgba(255,178,26,.35); }
-.led__price.off { color: var(--led-dim); text-shadow: none; }
-.fine { color: var(--ink-3); font-size: 12.5px; }
+.seg { background: var(--panel); border: 2px solid var(--rule); border-radius: 8px; overflow: hidden; }
+.seg__top { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; padding: 12px; }
+.seg__name { font-weight: 800; font-size: 16px; line-height: 1.2; min-width: 0; }
+.seg__name small { display: block; font-weight: 600; font-size: 13.5px; color: var(--ink-2); }
+.price { background: var(--sign-black); color: var(--price); border-radius: 6px; padding: 6px 9px; font-weight: 900; font-size: 22px; line-height: 1; text-align: right; }
+.price small { display: block; color: #bdbdbd; font-weight: 700; font-size: 10.5px; letter-spacing: .06em; margin-bottom: 3px; }
+.price.off { color: #9a9a9a; font-size: 15px; }
+.seg__mid { padding: 0 12px 12px; display: flex; justify-content: space-between; gap: 10px; font-size: 14.5px; font-weight: 600; color: var(--ink-2); flex-wrap: wrap; }
+.seg__mid b { color: var(--ink); font-weight: 800; }
+.pick { display: grid; grid-template-columns: 1fr 1fr; border-top: 2px solid var(--rule); }
+.pick button { border: 0; background: var(--panel); padding: 11px; font-weight: 800; font-size: 15px; }
+.pick button + button { border-left: 2px solid var(--rule); }
+.pick button[aria-pressed="true"].t { background: var(--green); color: #fff; }
+.pick button[aria-pressed="true"].s { background: var(--ink); color: var(--bg); }
+.flag { padding: 8px 12px; border-top: 2px solid var(--rule); font-size: 13.5px; font-weight: 700; display: flex; justify-content: space-between; gap: 8px; background: var(--soft); }
+.flag button { border: 0; background: none; font-weight: 800; text-decoration: underline; padding: 0; }
 
-/* Log buttons */
-.log { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.btn { border: 0; border-radius: 12px; padding: 13px 10px; font: 700 15px/1.2 var(--display); display: grid; gap: 2px; text-align: center; }
-.btn small { font: 500 12px/1.2 var(--body); opacity: .85; }
-.btn--took { background: var(--ink); color: var(--bg); }
-.btn--skip { background: var(--surface); color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--line); }
-.btn:active { transform: scale(.98); }
-.logged { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: var(--sunk); border-radius: 12px; padding: 12px 14px; font-size: 14px; }
-.logged b { font-family: var(--display); }
-.linkbtn { background: none; border: 0; color: var(--accent); font-weight: 600; padding: 4px; }
+.times { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.times div { background: var(--panel); border: 2px solid var(--rule); border-radius: 8px; padding: 8px 12px; font-weight: 700; font-size: 13.5px; }
+.times b { display: block; font-weight: 900; font-size: 26px; line-height: 1.1; }
+.big-btn { width: 100%; border: 0; border-radius: 8px; padding: 15px; background: var(--ink); color: var(--bg); font-weight: 900; font-size: 17px; display: flex; justify-content: center; gap: 10px; align-items: center; }
+.big-btn.green { background: var(--green); color: #fff; }
+.big-btn svg { width: 22px; height: 22px; }
+.ghost { width: 100%; border: 2px solid var(--rule); background: none; border-radius: 8px; padding: 12px; font-weight: 800; font-size: 15px; }
+.logged { border: 2px dashed var(--rule); border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center; gap: 10px; font-weight: 700; font-size: 15px; }
+.logged button { border: 0; background: none; font-weight: 800; text-decoration: underline; padding: 0; }
 
-/* Your line */
-.line-row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
-.line-val { font: 800 22px/1 var(--display); }
-.line-hr { color: var(--ink-3); font-size: 13px; }
-input[type=range] { width: 100%; accent-color: var(--ink); margin: 10px 0 2px; }
-.toggle { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 12px; margin-top: 12px; border-top: 1px solid var(--line); }
-.switch { position: relative; width: 46px; height: 28px; flex: none; }
-.switch input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
-.switch span { position: absolute; inset: 0; background: var(--line); border-radius: 999px; transition: background .2s; pointer-events: none; }
-.switch span::after { content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.25); transition: transform .2s; }
-.switch input:checked + span { background: var(--take); }
-.switch input:checked + span::after { transform: translateX(18px); }
-.switch input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+.drive__bar { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-weight: 700; font-size: 14px; color: var(--ink-2); }
+.next { border-radius: 12px; padding: 5px; }
+.next > div { border: 3px solid currentColor; border-radius: 8px; padding: 16px 16px 14px; display: grid; gap: 6px; }
+.next__dist { font-weight: 800; font-size: 18px; text-transform: uppercase; letter-spacing: .03em; }
+.next__do { font-weight: 900; font-size: 44px; line-height: .95; text-transform: uppercase; display: flex; justify-content: space-between; gap: 10px; align-items: center; }
+.next__do svg { width: 44px; height: 44px; flex: none; }
+.next__why { font-weight: 700; font-size: 19px; }
+.then { background: var(--panel); border: 2px solid var(--rule); border-radius: 8px; padding: 12px 14px; font-weight: 700; font-size: 16px; display: flex; gap: 10px; align-items: baseline; }
+.then .h { flex: none; }
+.changed { background: var(--yellow); color: #111; border-radius: 8px; padding: 10px 14px; font-weight: 800; font-size: 15.5px; border: 2px solid #111; }
+.progress { display: grid; background: var(--panel); border: 2px solid var(--rule); border-radius: 8px; padding: 6px 14px; }
+.stop { display: grid; grid-template-columns: 18px 1fr auto; gap: 10px; align-items: center; padding: 6px 0; font-weight: 600; font-size: 14.5px; color: var(--ink-2); }
+.stop i { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--ink-2); justify-self: center; }
+.stop.past { opacity: .5; }
+.stop.here { color: var(--ink); font-weight: 800; }
+.stop.here i { background: var(--green); border-color: var(--green); width: 16px; height: 16px; }
+.stop .lane { font-size: 12.5px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+.stop .lane.x { color: var(--green); }
+.drive__ctl { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
-/* Chart */
-.chart svg { width: 100%; height: auto; display: block; }
-.chart text { font: 600 10px var(--body); fill: var(--ink-3); }
-.legend { display: flex; gap: 14px; font-size: 12.5px; color: var(--ink-2); flex-wrap: wrap; }
-.legend i { display: inline-block; width: 16px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
-.tip { background: var(--accent-soft); border-radius: 12px; padding: 10px 12px; font-size: 14px; }
-.tip b { font-family: var(--display); }
-
-/* Other trips */
-.mini { display: grid; gap: 8px; }
-.mini button { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; text-align: left; width: 100%; border: 0; background: var(--surface);
-  border-radius: 14px; padding: 12px 14px; box-shadow: var(--shadow); align-items: center; }
-.mini__name { font: 700 15px/1.2 var(--display); }
-.mini__route { color: var(--ink-3); font-size: 13px; grid-column: 1; }
-.pill { grid-row: 1 / span 2; grid-column: 2; font: 800 12px/1 var(--display); text-transform: uppercase; letter-spacing: .05em;
-  color: var(--on-verdict); background: var(--v); padding: 7px 10px; border-radius: 999px; text-align: center; }
-.pill small { display: block; font: 600 11px/1.2 var(--body); text-transform: none; letter-spacing: 0; opacity: .9; margin-top: 3px; }
-
-/* Sponsor */
-.sponsor { display: flex; gap: 12px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; text-decoration: none; color: var(--ink); }
-.sponsor img { width: 44px; height: 44px; border-radius: 50%; flex: none; object-fit: cover; }
-.sponsor p { margin: 0; font-size: 13.5px; line-height: 1.45; color: var(--ink-2); }
-.sponsor b { color: var(--ink); }
-.foot { text-align: center; color: var(--ink-3); font-size: 12.5px; padding: 12px 8px 0; }
-.foot img { width: 28px; height: 28px; border-radius: 50%; vertical-align: middle; margin-right: 6px; }
-
-/* Scoreboard */
-.seg { display: grid; grid-template-columns: repeat(4, 1fr); background: var(--sunk); border-radius: 12px; padding: 4px; gap: 4px; }
-.seg button { border: 0; background: none; border-radius: 9px; padding: 8px 4px; font-weight: 600; font-size: 13.5px; color: var(--ink-2); }
-.seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
-.tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.tile { background: var(--surface); border-radius: var(--r); padding: 14px; box-shadow: var(--shadow); display: grid; gap: 4px; min-width: 0; }
-.tile__big { font: 800 30px/1.05 var(--display); letter-spacing: -.5px; }
-.tile__big.kept { color: var(--kept); }
-.tile__big.bought { color: var(--bought); }
-.tile__sub { font-size: 13px; color: var(--ink-2); }
-.bars { display: flex; align-items: flex-end; gap: 2px; height: 34px; margin-top: 6px; }
-.bars i { flex: 1; min-width: 2px; border-radius: 2px 2px 0 0; background: currentColor; opacity: .85; }
-.bars i.zero { opacity: .18; height: 2px !important; }
-.kv { display: grid; grid-template-columns: 1fr auto; gap: 10px 12px; align-items: baseline; }
-.kv dt { color: var(--ink-2); font-size: 14px; }
-.kv dd { margin: 0; font: 700 16px/1.2 var(--display); text-align: right; }
-.meter { height: 8px; background: var(--sunk); border-radius: 6px; position: relative; margin-top: 8px; }
-.meter i { position: absolute; inset: 0 auto 0 0; border-radius: 6px; background: var(--take); }
-.meter b { position: absolute; top: -4px; width: 2px; height: 16px; background: var(--ink); }
-.calls { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.calls__big { font: 800 26px/1 var(--display); }
-.streak { display: inline-flex; align-items: center; gap: 6px; background: var(--sunk); border-radius: 999px; padding: 6px 12px; font-weight: 600; font-size: 13.5px; }
-.badges { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-.badge { border-radius: 12px; padding: 10px 12px; background: var(--sunk); display: grid; gap: 2px; min-width: 0; }
-.badge b { font: 700 14px/1.2 var(--display); }
-.badge span { font-size: 12px; color: var(--ink-3); }
-.badge.got { background: var(--accent-soft); }
-.badge.got span { color: var(--ink-2); }
-.badge .prog { height: 4px; background: var(--line); border-radius: 3px; margin-top: 6px; overflow: hidden; }
-.badge .prog i { display: block; height: 100%; background: var(--ink-3); }
+.ranges { display: grid; grid-template-columns: repeat(4, 1fr); border: 2px solid var(--rule); border-radius: 8px; overflow: hidden; }
+.ranges button { border: 0; border-left: 2px solid var(--rule); background: var(--panel); padding: 9px 2px; font-weight: 800; font-size: 14px; }
+.ranges button:first-child { border-left: 0; }
+.ranges button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.board { background: var(--blue); color: #fff; border-radius: 10px; padding: 4px; }
+.board > div { border: 3px solid #fff; border-radius: 7px; padding: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; }
+.board .h { grid-column: 1 / -1; }
+.board b { display: block; font-weight: 900; font-size: 32px; line-height: 1; }
+.board span { font-weight: 700; font-size: 14px; }
+.board .row { grid-column: 1 / -1; border-top: 2px solid rgba(255,255,255,.55); padding-top: 9px; display: flex; justify-content: space-between; gap: 10px; font-weight: 700; font-size: 15px; }
+.miles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.mile { border: 2px solid var(--rule); border-radius: 8px; padding: 10px 12px; background: var(--panel); display: grid; gap: 2px; align-content: start; }
+.mile b { font-weight: 800; font-size: 15px; line-height: 1.2; }
+.mile span { font-size: 13px; color: var(--ink-2); font-weight: 600; }
+.mile.got { background: var(--green); color: #fff; border-color: var(--green); }
+.mile.got span { color: #fff; }
+.bar { height: 6px; background: var(--soft); border-radius: 3px; overflow: hidden; margin-top: 4px; }
+.bar i { display: block; height: 100%; background: var(--ink); }
 .rows { display: grid; }
-.row { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; padding: 10px 0; border-top: 1px solid var(--line); align-items: center; }
-.row:first-child { border-top: 0; }
-.row__what { font-weight: 600; font-size: 14px; min-width: 0; }
-.row__when { color: var(--ink-3); font-size: 12.5px; }
-.row__val { text-align: right; font: 700 14px/1.3 var(--display); grid-row: 1; grid-column: 2; }
-.row__val.kept { color: var(--kept); }
-.row__val.bought { color: var(--bought); }
-.row__act { grid-column: 2; text-align: right; }
-.had { border: 1px solid var(--line); background: none; border-radius: 999px; font-size: 12px; padding: 3px 9px; color: var(--ink-2); }
-.had[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
-.yir { background: var(--led-bg); color: #f3f4f6; border-radius: var(--r); padding: 18px; display: grid; gap: 8px; }
-.yir .label { color: var(--led); }
-.yir__big { font: 800 24px/1.2 var(--display); text-wrap: balance; }
-.yir__big em { font-style: normal; color: var(--led); }
-.yir p { margin: 0; color: #b8bec8; font-size: 14px; }
-.yir__foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 12px; color: #8b929c; padding-top: 6px; border-top: 1px solid #2a2f37; }
-.yir button { background: var(--led); color: #14110a; border: 0; border-radius: 999px; padding: 7px 14px; font: 700 13px/1 var(--display); }
-.safe { display: flex; gap: 10px; align-items: center; justify-content: space-between; color: var(--ink-2); font-size: 13.5px; padding: 4px 2px; }
+.r { display: grid; grid-template-columns: 1fr auto; gap: 0 10px; padding: 9px 0; border-top: 2px solid var(--soft); align-items: center; }
+.r:first-child { border-top: 0; }
+.r b { font-weight: 800; font-size: 15px; }
+.r small { display: block; color: var(--ink-2); font-size: 13px; font-weight: 600; }
+.r .v { font-weight: 900; font-size: 15px; text-align: right; }
+.sponsor { display: flex; gap: 12px; align-items: center; border-top: 2px solid var(--rule); padding-top: 12px; text-decoration: none; }
+.sponsor img { width: 42px; height: 42px; border-radius: 50%; flex: none; }
+.sponsor p { margin: 0; font-size: 14px; font-weight: 600; color: var(--ink-2); line-height: 1.4; }
+.sponsor b { color: var(--ink); font-weight: 800; }
+.safe { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; color: var(--ink-2); }
+.safe button { border: 0; background: none; font-weight: 800; color: var(--ink); text-decoration: underline; padding: 0; flex: none; }
 
-/* New trip */
-.step { display: grid; gap: 10px; }
-.step__q { display: flex; justify-content: space-between; align-items: baseline; }
-.opts { display: flex; flex-wrap: wrap; gap: 8px; }
-.opt { border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 10px 14px; font-weight: 600; font-size: 14.5px; }
-.opt small { display: block; font-weight: 500; color: var(--ink-3); font-size: 12px; }
-.opt[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
-.opt[aria-pressed="true"] small { color: inherit; opacity: .75; }
-.opt:disabled { opacity: .35; cursor: default; }
-.list { display: grid; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--surface); }
-.list button { border: 0; border-top: 1px solid var(--line); background: none; text-align: left; padding: 11px 14px; font-size: 14.5px; display: flex; justify-content: space-between; gap: 10px; }
+.choices { display: flex; flex-wrap: wrap; gap: 8px; }
+.choices button { border: 2px solid var(--rule); background: var(--panel); border-radius: 8px; padding: 7px 12px 7px 8px; font-weight: 800; font-size: 15px; display: inline-flex; gap: 8px; align-items: center; }
+.choices button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.list { border: 2px solid var(--rule); border-radius: 8px; overflow: hidden; background: var(--panel); display: grid; }
+.list button { border: 0; border-top: 2px solid var(--soft); background: none; text-align: left; padding: 11px 14px; font-weight: 700; font-size: 15.5px; display: flex; justify-content: space-between; gap: 10px; }
 .list button:first-child { border-top: 0; }
-.list button[aria-pressed="true"] { background: var(--accent-soft); font-weight: 600; }
-.list button:disabled { color: var(--ink-3); opacity: .5; cursor: default; }
-.text { width: 100%; border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 12px 14px; font-size: 16px; }
-.save { width: 100%; border: 0; border-radius: 14px; padding: 15px; background: var(--ink); color: var(--bg); font: 800 17px/1 var(--display); }
-.save:disabled { opacity: .35; cursor: default; }
-.preview { border: 1px dashed var(--line); border-radius: 14px; padding: 12px 14px; display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+.list button[aria-pressed="true"] { background: var(--green); color: #fff; }
+.list .tag { font-size: 12.5px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+.text { width: 100%; border: 2px solid var(--rule); background: var(--panel); border-radius: 8px; padding: 12px 14px; font-size: 16px; font-weight: 600; }
 
-/* Tabs */
-.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; background: color-mix(in srgb, var(--surface) 92%, transparent);
-  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-top: 1px solid var(--line);
-  padding-bottom: env(safe-area-inset-bottom, 0px); padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px); }
-.tabs__in { max-width: 480px; margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); }
-.tabs a { text-decoration: none; color: var(--ink-3); display: grid; justify-items: center; gap: 3px; padding: 9px 4px 10px; font: 600 12px/1 var(--body); }
-.tabs a[aria-current="page"] { color: var(--ink); }
+.tabs { position: fixed; inset: auto 0 0; z-index: 6; background: var(--bg); border-top: 2px solid var(--rule); padding: 0 env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px); }
+.tabs__in { max-width: 460px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); }
+.tabs a { text-decoration: none; color: var(--ink-2); display: grid; justify-items: center; gap: 2px; padding: 8px 2px 9px; font-weight: 800; font-size: 12.5px; border-top: 4px solid transparent; margin-top: -2px; }
+.tabs a[aria-current="page"] { color: var(--ink); border-top-color: var(--ink); }
 .tabs svg { width: 24px; height: 24px; }
-
-/* Toast + sheet */
-.toast { position: fixed; left: 50%; bottom: calc(80px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 20px); opacity: 0; pointer-events: none;
-  z-index: 8; background: var(--ink); color: var(--bg); border-radius: 14px; padding: 12px 14px; display: flex; gap: 14px; align-items: center;
-  width: min(440px, calc(100% - 32px)); transition: opacity .2s, transform .2s; font-size: 14px; }
+.toast { position: fixed; left: 50%; bottom: calc(78px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 16px); opacity: 0; pointer-events: none; z-index: 8;
+  background: var(--sign-black); color: #fff; border-radius: 8px; padding: 12px 14px; display: flex; gap: 12px; align-items: center; width: min(428px, calc(100% - 32px)); font-weight: 700; font-size: 15px; transition: opacity .2s, transform .2s; }
 .toast.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
-.toast button { background: none; border: 0; color: var(--led); font-weight: 700; margin-left: auto; white-space: nowrap; }
-.toast.cheer { background: var(--led-bg); color: #fff; box-shadow: inset 0 0 0 2px var(--led); }
-.toast.cheer b { color: var(--led); font-family: var(--display); }
-.scrim { position: fixed; inset: 0; background: rgba(8,10,14,.45); z-index: 9; }
-.sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; background: var(--surface); border-radius: 22px 22px 0 0;
-  padding: 10px max(18px, env(safe-area-inset-right, 0px)) calc(22px + env(safe-area-inset-bottom, 0px)) max(18px, env(safe-area-inset-left, 0px));
-  max-width: 520px; margin: 0 auto; display: grid; gap: 12px; }
-.sheet__grab { width: 40px; height: 5px; border-radius: 3px; background: var(--line); margin: 0 auto 4px; }
-.sheet h3 { font: 800 20px/1.25 var(--display); margin: 0; }
-.sheet p { margin: 0; color: var(--ink-2); font-size: 14px; }
-.sheet .opt { width: 100%; text-align: left; padding: 13px 14px; }
-
-@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+.toast button { margin-left: auto; border: 0; background: none; color: var(--price); font-weight: 900; white-space: nowrap; }
+.toast.win { background: var(--green); box-shadow: inset 0 0 0 2px var(--green), inset 0 0 0 4px #fff; }
+.toast.win button { color: #fff; text-decoration: underline; }
+.scrim { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 9; }
+.sheet { position: fixed; inset: auto 0 0; z-index: 10; max-width: 500px; margin: 0 auto; background: var(--bg); border-top: 3px solid var(--rule); border-radius: 14px 14px 0 0;
+  padding: 18px max(18px, env(safe-area-inset-right, 0px)) calc(20px + env(safe-area-inset-bottom, 0px)) max(18px, env(safe-area-inset-left, 0px)); display: grid; gap: 12px; }
+.sheet h3 { margin: 0; font-weight: 900; font-size: 22px; }
+.sheet p { margin: 0; color: var(--ink-2); font-weight: 600; font-size: 15px; }
+.foot { text-align: center; color: var(--ink-2); font-size: 13px; font-weight: 600; padding-top: 18px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 
 <div class="app">
   <header class="top">
-    <a class="brand" href="#now"><span class="brand__mark">$?</span><span><span class="brand__name">Worth the Toll?</span><span class="brand__sub">DMV tolls, answered</span></span></a>
-    <span class="sample">Sample numbers</span>
+    <a class="brand" href="#now"><span class="brand__mark">$</span>Worth the Toll?</a>
+    <span class="clock num" id="clock">Tue 7:42 AM</span>
   </header>
 
-  <!-- NOW -->
-  <main id="v-now" class="stack" hidden>
-    <div class="chips" id="tripChips" role="group" aria-label="Your trips"></div>
-
-    <div class="trip-head">
-      <div>
-        <div class="trip-head__route" id="tRoute"></div>
-        <div class="trip-head__road" id="tRoad"></div>
+  <main class="view" id="v-now" hidden>
+    <nav class="trips" id="trips" aria-label="Your trips"></nav>
+    <div style="display:flex;gap:10px;align-items:center" id="routeLine"></div>
+    <section id="answer" aria-live="polite"></section>
+    <div class="times" id="times"></div>
+    <button class="big-btn green" id="startDrive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V5M5 12l7-7 7 7"/></svg>Start driving</button>
+    <section class="panel">
+      <span class="h">Your rule for tolls</span>
+      <div class="modes" id="modes" role="group" aria-label="Which tolls to take">
+        <button data-mode="none">No tolls</button><button data-mode="worth">Worth it<br>to me</button><button data-mode="all">All tolls</button>
       </div>
-      <div class="trip-head__time">Tue 7:42 AM</div>
-    </div>
-
-    <section class="verdict" id="verdict" aria-live="polite">
-      <div class="verdict__word" id="vWord"></div>
-      <div class="verdict__main num" id="vMain"></div>
-      <div class="verdict__sub num" id="vSub"></div>
-    </section>
-
-    <section class="card compare">
-      <div class="led" id="led">
-        <span class="led__where" id="ledWhere"></span>
-        <span class="led__price num" id="ledPrice"></span>
+      <div id="lineBox">
+        <div class="lineval"><span>Pay up to <b class="num" id="lineVal"></b></span><button class="unit" id="unit"></button></div>
+        <input type="range" id="line" min="10" max="150" step="5" aria-label="Most you'll pay to save time">
+        <p class="note" id="lineNote"></p>
       </div>
-      <div class="lane"><span class="lane__name">Express</span><span class="lane__bar express"><i id="barE"></i></span><span class="lane__min num" id="minE"></span></div>
-      <div class="lane"><span class="lane__name" id="regName">Regular</span><span class="lane__bar"><i id="barR"></i></span><span class="lane__min num" id="minR"></span></div>
-      <div class="fine">The price on the last sign before you enter is the one you pay.</div>
+      <p class="note" id="modeNote"></p>
     </section>
-
-    <div id="logArea"></div>
-
-    <section class="card">
-      <div class="line-row">
-        <span class="label">Your line</span>
-        <span class="line-hr num" id="lineHr"></span>
-      </div>
-      <div class="line-row" style="margin-top:6px">
-        <span class="line-val num" id="lineVal"></span>
-        <span class="fine">most a minute is worth to you</span>
-      </div>
-      <input type="range" id="lineRange" min="10" max="150" step="5" aria-label="Your line, in cents per minute">
-      <label class="toggle" for="hov">
-        <span><b>Carpooling (3+ people)</b><br><span class="fine">With E-ZPass Flex set to HOV, express is free.</span></span>
-        <span class="switch"><input type="checkbox" id="hov"><span></span></span>
-      </label>
-    </section>
-
-    <section class="card stack chart" id="chartCard">
-      <div class="line-row"><span class="label">Today on this trip</span><span class="fine">5:30 to 10 AM</span></div>
-      <div id="chart"></div>
-      <div class="legend"><span><i style="background:var(--led)"></i>Today</span><span><i style="background:var(--ink-3);height:2px"></i>A typical Tuesday</span></div>
-      <div class="tip" id="tip"></div>
-    </section>
-
-    <section class="stack">
-      <span class="label">Your other trips</span>
-      <div class="mini" id="mini"></div>
-    </section>
-
-    <a class="sponsor" href="https://walksforlucy.com/?utm_source=worththetoll&utm_medium=referral&utm_content=now" target="_blank" rel="noopener">
-      <img class="lucy" alt="Anissa of Walks for Lucy">
-      <p><b>Kept free by Walks for Lucy.</b> Long day at the office? Anissa does the midday dog walk in Vienna, Reston and Fairfax.</p>
-    </a>
+    <div class="h" id="segHead"></div>
+    <div class="view" id="segs" style="gap:10px"></div>
+    <div id="logBox"></div>
+    <a class="sponsor" href="https://walksforlucy.com/?utm_source=worththetoll&utm_medium=referral&utm_content=now" target="_blank" rel="noopener"><img class="lucy" alt="Anissa of Walks for Lucy"><p><b>Kept free by Walks for Lucy.</b> Long day at the office? Anissa does the midday dog walk in Vienna, Reston and Fairfax.</p></a>
   </main>
 
-  <!-- SCOREBOARD -->
-  <main id="v-score" class="stack" hidden>
-    <div class="seg" role="group" aria-label="Time range" id="seg">
-      <button data-r="week">Week</button><button data-r="month">Month</button><button data-r="year">Year</button><button data-r="all">All time</button>
-    </div>
-
-    <div class="tiles">
-      <div class="tile" style="color:var(--kept)">
-        <span class="label">Money kept</span>
-        <span class="tile__big kept num" id="sKept"></span>
-        <span class="tile__sub num" id="sKeptSub"></span>
-        <div class="bars" id="bKept"></div>
-      </div>
-      <div class="tile" style="color:var(--bought)">
-        <span class="label">Time bought</span>
-        <span class="tile__big bought num" id="sBought"></span>
-        <span class="tile__sub num" id="sBoughtSub"></span>
-        <div class="bars" id="bBought"></div>
-      </div>
-    </div>
-
-    <div class="fine" id="sCompare" style="text-align:center"></div>
-
-    <section class="card">
-      <span class="label">Averages</span>
-      <dl class="kv" style="margin:10px 0 0">
-        <dt>You paid per minute</dt><dd class="num" id="aCpm"></dd>
-      </dl>
-      <div class="meter" id="aMeter"><i></i><b></b></div>
-      <div class="fine" id="aMeterNote" style="margin-top:6px"></div>
-      <dl class="kv" style="margin:12px 0 0">
-        <dt>Toll, when you took it</dt><dd class="num" id="aToll"></dd>
-        <dt>Minutes saved per trip</dt><dd class="num" id="aMins"></dd>
-        <dt>Kept per month</dt><dd class="num" id="aMonth"></dd>
-      </dl>
-    </section>
-
-    <section class="card calls">
-      <div>
-        <span class="label">Smart calls</span>
-        <div class="calls__big num" id="cBig"></div>
-        <div class="fine" id="cSub"></div>
-      </div>
-      <span class="streak num" id="cStreak"></span>
-    </section>
-
-    <section class="stack">
-      <span class="label">Milestones</span>
-      <div class="badges" id="badges"></div>
-    </section>
-
-    <a class="sponsor" href="https://walksforlucy.com/?utm_source=worththetoll&utm_medium=referral&utm_content=scoreboard" target="_blank" rel="noopener">
-      <img class="lucy" alt="Anissa of Walks for Lucy">
-      <p><b>Scoreboard brought to you by Walks for Lucy.</b> Long commute? Anissa does the midday walk so your dog doesn't wait for you.</p>
-    </a>
-
-    <section class="card">
-      <div class="line-row"><span class="label">Recent trips</span><span class="fine">Tap “Had to” if you were running late</span></div>
-      <div class="rows" id="rows" style="margin-top:6px"></div>
-    </section>
-
-    <section class="yir">
-      <span class="label">2026 so far</span>
-      <div class="yir__big num" id="yirBig"></div>
-      <p class="num" id="yirSub"></p>
-      <div class="yir__foot"><span>Worth the Toll? · kept free by Walks for Lucy</span><button type="button" id="yirShare">Share</button></div>
-    </section>
-
-    <div class="safe" id="safeLine">
-      <span class="num" id="safeText"></span>
-      <button class="linkbtn" id="safeBtn">Keep them safe →</button>
-    </div>
+  <main class="view" id="v-drive" hidden>
+    <div class="drive__bar"><span id="dTrip"></span><span class="num" id="dEta"></span></div>
+    <section id="next" aria-live="assertive"></section>
+    <div class="changed" id="changed" hidden></div>
+    <div class="then" id="then"></div>
+    <div class="progress" id="progress"></div>
+    <div class="drive__ctl"><button class="ghost" id="voice"></button><button class="ghost" id="endDrive">End drive</button></div>
+    <p class="note">Big enough to read in a phone mount. It changes on its own as you go, so you never tap it while driving. Turn on Voice to hear each step. <b>In this mockup</b> the drive plays by itself and prices shift along the way.</p>
   </main>
 
-  <!-- NEW TRIP -->
-  <main id="v-new" class="stack" hidden>
-    <h2 style="font-size:24px">Save a trip</h2>
-    <p class="fine" style="margin:-8px 0 0">Four taps. No map, no sign-in.</p>
-
-    <section class="step">
-      <span class="label">Road</span>
-      <div class="opts" id="nRoad"></div>
-    </section>
-    <section class="step" id="stepDir" hidden>
-      <span class="label">Direction</span>
-      <div class="opts" id="nDir"></div>
-    </section>
-    <section class="step" id="stepFrom" hidden>
-      <span class="label">Where you get on</span>
-      <div class="list" id="nFrom"></div>
-    </section>
-    <section class="step" id="stepTo" hidden>
-      <span class="label">Where you get off</span>
-      <div class="list" id="nTo"></div>
-    </section>
-    <section class="step" id="stepName" hidden>
-      <label class="label" for="nName">Name it (optional)</label>
-      <input class="text" id="nName" placeholder="Morning, Gym, Mom's house…" maxlength="24">
-      <div class="preview" id="nPreview"></div>
-    </section>
-    <button class="save" id="nSave" disabled>Save trip</button>
+  <main class="view" id="v-score" hidden>
+    <div class="ranges" role="group" aria-label="Time range" id="ranges"><button data-r="week">Week</button><button data-r="month">Month</button><button data-r="year">Year</button><button data-r="all">All time</button></div>
+    <section class="board"><div>
+      <span class="h" id="bTitle"></span>
+      <div><b class="num" id="bKept"></b><span id="bKeptSub"></span></div>
+      <div><b class="num" id="bBought"></b><span id="bBoughtSub"></span></div>
+      <div class="row"><span>You paid per minute</span><span class="num" id="bCpm"></span></div>
+      <div class="row"><span>Average toll you paid</span><span class="num" id="bAvg"></span></div>
+      <div class="row"><span>Smart calls</span><span class="num" id="bCalls"></span></div>
+      <div class="row"><span>Streak</span><span class="num" id="bStreak"></span></div>
+    </div></section>
+    <p class="note" id="bCompare"></p>
+    <div class="h">Milestones</div>
+    <div class="miles" id="miles"></div>
+    <section class="panel"><span class="h">Recent</span><div class="rows" id="recent"></div></section>
+    <a class="sponsor" href="https://walksforlucy.com/?utm_source=worththetoll&utm_medium=referral&utm_content=scoreboard" target="_blank" rel="noopener"><img class="lucy" alt="Anissa of Walks for Lucy"><p><b>Scoreboard brought to you by Walks for Lucy.</b> Long commute? Anissa does the midday walk so your dog isn't waiting on you.</p></a>
+    <div class="safe"><span id="safeText"></span><button id="safeBtn">Keep them safe</button></div>
   </main>
 
-  <div class="foot"><img class="lucy" alt="">Worth the Toll? is kept free by Anissa of <a href="https://walksforlucy.com/?utm_source=worththetoll&utm_medium=referral&utm_content=footer" target="_blank" rel="noopener">Walks for Lucy</a>, dog walking and pet sitting in Reston, Vienna, Fairfax and Loudoun.</div>
+  <main class="view" id="v-new" hidden>
+    <div class="route">Save a trip<small>Pick a road, where you get on and where you get off. That's it.</small></div>
+    <div class="h">Road</div>
+    <div class="choices" id="nRoad"></div>
+    <div class="h" id="nFromH" hidden>Where you get on</div>
+    <div class="list" id="nFrom" hidden></div>
+    <div class="h" id="nToH" hidden>Where you get off</div>
+    <div class="list" id="nTo" hidden></div>
+    <div id="nNameBox" hidden class="view" style="gap:8px">
+      <label class="h" for="nName">Name it</label>
+      <input class="text" id="nName" maxlength="24" placeholder="Morning, Gym, Mom's house">
+      <p class="note" id="nSum"></p>
+    </div>
+    <button class="big-btn" id="nSave" disabled>Save trip</button>
+  </main>
+
+  <div class="foot">Kept free by Anissa of <a href="https://walksforlucy.com/?utm_source=worththetoll&utm_medium=referral&utm_content=footer" target="_blank" rel="noopener">Walks for Lucy</a>, dog walking and pet sitting in Reston, Vienna, Fairfax and Loudoun. Sample numbers.</div>
 </div>
 
-<nav class="tabs" aria-label="Main">
-  <div class="tabs__in">
-    <a href="#now" data-tab="now"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20 9 4M20 20 15 4M12 6v2M12 11v2M12 16v2"/></svg>Now</a>
-    <a href="#score" data-tab="score"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20V12M12 20V5M19 20v-6"/></svg>Scoreboard</a>
-    <a href="#new" data-tab="new"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>New trip</a>
-  </div>
-</nav>
-
+<nav class="tabs" aria-label="Main"><div class="tabs__in">
+  <a href="#now" data-tab="now"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20 9 4M20 20 15 4M12 6v2M12 11v2M12 16v2"/></svg>Trip</a>
+  <a href="#drive" data-tab="drive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V5M5 12l7-7 7 7"/></svg>Drive</a>
+  <a href="#score" data-tab="score"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 20V12M12 20V5M19 20v-6"/></svg>Scoreboard</a>
+  <a href="#new" data-tab="new"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>New trip</a>
+</div></nav>
 <div class="toast" id="toast" role="status"><span id="toastText"></span><button id="toastBtn" type="button"></button></div>
 <div class="scrim" id="scrim" hidden></div>
-<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" hidden></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" hidden></div>
 
 <script>
 const LUCY = "data:image/webp;base64,UklGRuQHAABXRUJQVlA4INgHAADwKQCdASpwAHAAPnk0lEckoqIhLHG92JAPCUAWQsYrA9X84fLVBOAHhQFk12hNyaxyuH677FdPI+BSlU8HhiIQ/+e6jqNX4gE+0kLV4gExXyEw1GRZtxCfyHpPJOiPYYdW/Ug4ar53pdSh1EIaWLUiQmzvdHbnQaYV1Q6fKD7BcUcSMJp9+XUHHi2nt0NaAzPaJawFqNihTulOjMzDaCMZulclUQAIpV5qNpaFBpo2/zTnGGMc+qMcJsBDQ7zYhpCdT6k8w7DjfVO7GpYyXNiBAJEPP/uiFcUzH+asHDJLQ0k/Ae9Frzwk01iQWiaVK4kCkRIc1HGxOSwP8SHL76s9NZ0JsZjfBrHbqvE4UdDUGepC2bvcrOknNZlwtqvg3UuzdXMYHbLKCBoG40pM/9e/5vKRZDIPOZRsSufeiX0h2bRz2tJeeMlLnlSOGOiYBJVH4452TYK4AAD+9tH/zJOWnr+bvkM5wH9j3n6italuhiktAhIpcv6Fk4cfbK3rtz2id7hvjPR4sBMSfFmiSNZu+AeomObEuMmmmHejS876eSP6NxTfvx+sp2vBIPrlTZ7pA9ToK7LJFlJEAlmmw3Rue0DWHjTWZCM3uZFExOsQo/MvvXixs05Xxu9gUrxLAEsIpjBLzLakJfdChsPl6MUgOrXT4Pa437/j+WhMJ02K/SEKa7cPbJI9TAlTw/ofU751U8ZOEjHlW5ET3D+lcjs9kUHH7DzbseUELJk3NPrbC6rIydAnuDY1x51TMhl9csHT6ml6690UON/jINipf98i9CPKKCW8EG+jrOP7iVF21ukmgo+FsBqJo/vg9RJSRnra+KKebHjCUvwuJSZbRBrcnL2SawFV+kTUxN9bpj4K5RkOd9cj/ie1GwLAodSfaZRfb571FNfyGVtIW+xiZnxd82cDn93KSFdU9hQWrvcWMOarc7LZ5IW76AnAItu27X7FjU+dNH093FeYrF9L8VdWumYPUjTa2M3lW+IWiEOkNQGBfIQ5nA1WHCnc+IcGQpHgwxiDOf/FoxvNq+ftcVVGtY4st8VVInILBlE1mPL+d6B7zUyvoOo0zzKO/3C8hBPsJoQvHO99lthpwjM40smW4XJi67iItotkj3HNpX5Dr4cbFZadec8uCah/PDBtVPAe4M4BmFCj7n6/7MUCSXI/s3RQay7UGPVgoVZ1pNEd9boSuVvBmgvmpS3wje/SDpAZCenLnQZLlFSssCf49dgiLodnvhX0yygU8Soiz5kPKBT8xc/pBJVtZIMiICX+wHDsosgHlWxPUMsJMZQNSST5cExGmChGpvNM//zE+D7RwCfB/lb0qW0mW3jBd6Y15D7c1Ar3v7S24v0s3QXUAuHm6d0k8o/4+5iEjexW9VT83mrmGcrZl/bWADybsPwmMXEM5tWMckcFBv2QTiYh0fbFSB3OgTDH/le7xCpgbbO8ADcrrVkhIxsc0ZnZtwn2A4Kd+LoLM0XWMzO/9z5dMUtG9pnrJ2V44LCmkXpPrrnjTM+xlA25symrJVIhyhinsjeov15Yhnamzb9VLgkpMtls2v+yL7Q/MBkva4+k3lI00SG20A0sD7ghmqNEc1OAgz8H8bJJ1yKYU0aZj6/dA81ihOzIRNdlRQ1+TZFbibsoC0LFy+sPdhV4uFy/YzoGZ2OVeOL1JelNzCciGHnvKVbQbcS79q5GSa8If69Vnh9TovzAj/qJXEOzhKg/T9yitAdBbIKPV1lL/x7AjClIFNarc4d0p4BVjBYlQyULto2Y0Jc8BeW48AY5eMovJ3jw+1/W8b/d8bPpGhxw6hbveIfdy5eTwr5VocxMNK7ftvWS4+dgQBOUdLz4ef1si/S2ixwzaZpZiizd7vPaaAN52OsRmgkXz+hSU3LPcA5O7mW3iE81D/7RORQJ6KfjJny3zBx+algM3+h9unwdeE5kGkXPThKL8bXFHvtDy9nNG/x9/3ryOOqvlVWniQw6jyIw0VQTVZnn8kumEBZ0cOwa+tWS2aMSeIT2cpGYiUKrPXB13wvA6TxlEHFVtLU4y4cWj3frcYBkVYvaZ4r5EePpIZ2dxR3G2ZFB3Sq5BVtC4fj5NPYkL8ydS3LvhSiALVHXKR57qND7E3NV/bwr5Od9CAfqYkkrmJeyBkNdAyugngXlKp5LStK06P3rzhI1Bo9QSlBprEYN5uLDufeRshirtsbMe2B7C9s+kOqY0THSD/RBUvJdprXeRUG7xy/jTjElkb5cqS+My83LA1XpWZwwZshEQTw5Bkvq3wqmFCLH8VLdtGb+L7P4VW9/M9W1+aCEuyaX/0o/aNaYKCMdArPPeeP4jGi4qw90CZ8tRU+/P//V+HB22x+2/vZ/09b/J39RHZ5M22QV79vrX1fGJ7G+xx8SUpk8UWax+BpmrXbXwXr3qFb9N2/tv9f8ShNX2CF8oc/c/8ffvXVeX88sqf910B/NvfyUik7Pw+v9m7nyYx4TINKhquO3Jovx4ajMw2FWTIU+81ayQVkmwH6aPOSfgZKHrEfUEM0uOqNMAYHXvo9MmuNQQvrMY5KEJik1U95RB0UpeM/+JGwgc4rlNC6mDHqvG88worRHhxJGlnheFKHz6pGb6Z3ZL1ZBBkdjsRoL90s26CvseLYuLWtBYVx+WI1B6fj9Pkb9G9W+Y1g9NYID6g6sh8QJeAAA";
 document.querySelectorAll('img.lucy').forEach(i => i.src = LUCY);
-
-/* ---------- storage (mockup: this browser only) ---------- */
+const $ = (id) => document.getElementById(id);
 const store = {
-  get(k, d) { try { const v = localStorage.getItem('wtt:' + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
-  set(k, v) { try { localStorage.setItem('wtt:' + k, JSON.stringify(v)); } catch {} },
+  get(k, d) { try { const v = localStorage.getItem('wtt2:' + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem('wtt2:' + k, JSON.stringify(v)); } catch {} },
 };
-
-/* ---------- roads (sample entrances) ---------- */
-const ROADS = {
-  '66o': { name: 'I-66 outside the Beltway', short: 'I-66', dirs: { E: 'East to the Beltway', W: 'West to Gainesville' },
-    stops: ['Gainesville (Rt 29)', 'Manassas (Rt 234)', 'Centreville (Rt 28)', 'Fair Lakes', 'Fairfax (Rt 50)', 'Vienna / Nutley St', 'Beltway (I-495)'] },
-  '66i': { name: 'I-66 inside the Beltway', short: 'I-66', dirs: { E: 'East to DC (mornings)', W: 'West (evenings)' },
-    stops: ['Beltway (I-495)', 'Falls Church (Rt 7)', 'Ballston (Glebe Rd)', 'Rosslyn', 'DC (Roosevelt Bridge)'] },
-  '495': { name: '495 Express', short: '495', dirs: { N: 'North (inner loop)', S: 'South (outer loop)' },
-    stops: ['Springfield (I-95)', 'Braddock Rd', 'Little River Tpk', 'Rt 50', 'I-66', 'Tysons (Rt 7)', 'Dulles Toll Rd', 'Old Dominion Dr / GW Pkwy'] },
-  '95': { name: '95 Express', short: '95', dirs: { N: 'North (mornings)', S: 'South (afternoons)' },
-    stops: ['Stafford (Rt 610)', 'Quantico', 'Dumfries', 'Woodbridge (Rt 123)', 'Lorton', 'Springfield'] },
-  'icc': { name: 'ICC (MD 200)', short: 'ICC', md: true, dirs: { E: 'East toward Laurel', W: 'West toward Gaithersburg' },
-    stops: ['Gaithersburg (I-370)', 'Georgia Ave', 'Layhill Rd', 'New Hampshire Ave', 'US 29', 'I-95', 'Laurel (US 1)'] },
-  '395': { name: '395 Express', short: '395', dirs: { N: 'North (mornings)', S: 'South (afternoons)' },
-    stops: ['Springfield', 'Edsall Rd', 'Seminary Rd', 'Shirlington', 'Pentagon', 'DC line'] },
-};
-
-/* ---------- saved trips (sample) ---------- */
-const DEFAULT_TRIPS = [
-  { id: 'am', name: 'Morning', from: 'Vienna / Nutley St', to: 'Rosslyn', road: 'I-66 East', toll: 6.50, express: 19, regular: 33, free: false },
-  { id: 'pm', name: 'Evening', from: 'Rosslyn', to: 'Beltway (I-495)', road: 'I-66 West, inside the Beltway', toll: 0, express: 11, regular: 11, free: 'Westbound tolls run 3 to 7 PM on weekdays. Both sides are free right now.' },
-  { id: 'md', name: 'Laurel office', from: 'Gaithersburg (I-370)', to: 'I-95', road: 'ICC (MD 200) East · vs the free route on local roads', regularName: 'Free route', toll: 3.87, express: 16, regular: 31, free: false },
-  { id: 'gym', name: 'Saturday soccer', from: 'Springfield (I-95)', to: 'Tysons (Rt 7)', road: '495 Express North', toll: 4.90, express: 17, regular: 20, free: false },
-];
-let trips = store.get('trips', DEFAULT_TRIPS);
-let current = store.get('current', 'am');
-if (!trips.find(t => t.id === current)) current = trips[0].id;
-let line = store.get('line', 50);          // cents per minute
-let hov = store.get('hov', false);
-let todayLogs = store.get('today', {});    // tripId -> log id
-
-/* ---------- verdict ---------- */
+const esc = (s) => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const money = (n) => '$' + n.toFixed(2);
 const money0 = (n) => '$' + Math.round(n).toLocaleString();
 const cents = (c) => c >= 100 ? '$' + (c / 100).toFixed(2) : Math.round(c) + '¢';
-function verdictFor(t) {
-  const saved = t.regular - t.express;
-  if (t.free) return { key: 'free', word: 'Free right now', main: 'No toll on this trip right now', sub: t.free, saved, cpm: 0 };
-  if (hov) return { key: 'take', word: 'Take it', main: `Free for you · saves ${saved} min`, sub: 'Carpooling with E-ZPass Flex set to HOV', saved, cpm: 0 };
-  if (saved < 2) return { key: 'skip', word: 'Skip it', main: `${money(t.toll)} for ${saved} min`, sub: 'Barely faster right now', saved, cpm: t.toll * 100 / Math.max(saved, 1) };
-  const cpm = t.toll * 100 / saved, r = cpm / line;
-  const key = r <= 0.8 ? 'take' : r <= 1.2 ? 'close' : 'skip';
-  const vs = key === 'take' ? `under your ${cents(line)} line` : key === 'close' ? `close to your ${cents(line)} line` : `over your ${cents(line)} line`;
-  return { key, word: { take: 'Take it', close: 'Close call', skip: 'Skip it' }[key], main: `${money(t.toll)} saves ${saved} min`, sub: `${cents(cpm)} a minute · ${vs}`, saved, cpm };
-}
-const vColor = (k) => `var(--${k})`;
+const UP = '<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 30 30 10M14 10h16v16"/></svg>';
+const STRAIGHT = '<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 34V7M9 18 20 7l11 11"/></svg>';
+const shortStop = (s) => s.replace(/\s*\(.*\)/, '');
+const shortName = (s) => s.replace(' the Beltway', '');
+const fmtClock = (m) => `${(Math.floor(m / 60) % 12) || 12}:${String(Math.round(m % 60)).padStart(2, '0')}`;
 
-/* ---------- sample history (deterministic) ---------- */
+/* Corridors: stops with mile markers, and the tolled stretches along them. Sample numbers. */
+const CORR = {
+  i66: { label: 'I-66', shield: '66', dirs: ['East', 'West'],
+    stops: [['Gainesville (Rt 29)', 0], ['Manassas (Rt 234)', 6], ['Centreville (Rt 28)', 12], ['Fair Lakes', 17], ['Fairfax (Rt 50)', 20], ['Vienna / Nutley St', 24], ['Beltway (I-495)', 27], ['Falls Church (Rt 7)', 29], ['Ballston', 32], ['Rosslyn', 35], ['DC (Roosevelt Bridge)', 36]],
+    parts: [{ id: 'o', name: 'I-66 outside the Beltway', a: 0, b: 27, rate: 0.36, gain: 0.45 },
+            { id: 'i', name: 'I-66 inside the Beltway', a: 27, b: 36, rate: 0.72, gain: 1.5, peakUp: true, offNote: 'Westbound tolls run 3 to 7 PM. Free right now.' }] },
+  i95: { label: '95 / 395', shield: '95', dirs: ['North', 'South'],
+    stops: [['Stafford (Rt 610)', 0], ['Quantico', 6], ['Dumfries', 12], ['Woodbridge (Rt 123)', 18], ['Lorton', 24], ['Springfield', 32], ['Seminary Rd', 37], ['Pentagon', 41], ['DC line', 43]],
+    parts: [{ id: '95', name: '95 Express', a: 0, b: 32, rate: 0.30, gain: 0.55, peakUp: true, closed: 'Express lanes run north this morning.' },
+            { id: '395', name: '395 Express', a: 32, b: 43, rate: 0.42, gain: 0.8, peakUp: true, closed: 'Express lanes run north this morning.' }] },
+  i495: { label: '495', shield: '495', dirs: ['North', 'South'],
+    stops: [['Springfield (I-95)', 0], ['Braddock Rd', 4], ['Rt 50', 8], ['I-66', 10], ['Tysons (Rt 7)', 14], ['Dulles Toll Rd', 16], ['GW Pkwy', 19]],
+    parts: [{ id: '495', name: '495 Express', a: 0, b: 19, rate: 0.28, gain: 0.25 }] },
+  icc: { label: 'ICC (MD 200)', shield: 'ICC', md: true, dirs: ['East', 'West'],
+    stops: [['Gaithersburg (I-370)', 0], ['Georgia Ave', 6], ['Layhill Rd', 9], ['New Hampshire Ave', 12], ['US 29', 15], ['I-95', 18], ['Laurel (US 1)', 20]],
+    parts: [{ id: 'icc', name: 'ICC (MD 200)', a: 0, b: 20, rate: 0.20, gain: 0.8 }] },
+};
+const DEFAULT_TRIPS = [
+  { id: 'am', name: 'Morning', c: 'i66', from: 'Centreville (Rt 28)', to: 'Rosslyn' },
+  { id: 'pm', name: 'Evening', c: 'i66', from: 'Rosslyn', to: 'Vienna / Nutley St' },
+  { id: 'pc', name: 'Pentagon', c: 'i95', from: 'Woodbridge (Rt 123)', to: 'Pentagon' },
+  { id: 'md', name: 'Laurel office', c: 'icc', from: 'Gaithersburg (I-370)', to: 'I-95' },
+];
+let trips = store.get('trips', DEFAULT_TRIPS);
+let current = store.get('current', 'am'); if (!trips.find(t => t.id === current)) current = trips[0].id;
+let mode = store.get('mode', 'worth');
+let line = store.get('line', 60);
+let perHour = store.get('perHour', false);
+let overrides = {};
+let jitter = {};
+let clockMin = 7 * 60 + 42;
+
+function segments(t) {
+  const C = CORR[t.c], m = Object.fromEntries(C.stops), a = m[t.from], b = m[t.to], up = b > a;
+  const lo = Math.min(a, b), hi = Math.max(a, b);
+  let elapsed = 0;
+  return C.parts.filter(p => p.b > lo && p.a < hi).sort((x, y) => up ? x.a - y.a : y.a - x.a).map(p => {
+    const s = Math.max(lo, p.a), e = Math.min(hi, p.b), mi = e - s;
+    const entry = C.stops.find(([, x]) => x === (up ? s : e))[0], exit = C.stops.find(([, x]) => x === (up ? e : s))[0];
+    const wrongWay = p.peakUp && !up;
+    const reach = clockMin + elapsed, j = jitter[p.id] || 1, later = elapsed > 3 ? 1.08 : 1;
+    const toll = wrongWay ? 0 : +Math.max(0.5, p.rate * mi * j * later).toFixed(2);
+    const saved = wrongWay ? 0 : Math.max(1, Math.round(p.gain * mi * (0.7 + 0.3 * j)));
+    const exp = Math.round(mi * 1.05) + 1;
+    const soon = elapsed > 3;
+    elapsed += exp + (wrongWay ? 0 : 0);
+    return { ...p, mi, entry, exit, toll, saved, exp, reg: exp + saved, reach, soon,
+      off: wrongWay ? (p.closed ? 'closed' : 'free') : null, note: wrongWay ? (p.closed || p.offNote) : null };
+  });
+}
+function recommended(s) {
+  if (s.off) return 'n/a';
+  if (mode === 'none') return 'skip';
+  if (mode === 'all') return 'take';
+  if (s.saved < 2) return 'skip';
+  return s.toll * 100 / s.saved <= line ? 'take' : 'skip';
+}
+const decide = (t, s) => s.off ? 'n/a' : ((overrides[t.id] || {})[s.id] || recommended(s));
+const isClose = (s) => mode === 'worth' && !s.off && Math.abs(s.toll * 100 / Math.max(s.saved, 1) - line) / line < 0.12;
+function plan(t) {
+  const segs = segments(t), picks = segs.map(s => ({ s, d: decide(t, s) }));
+  const take = picks.filter(p => p.d === 'take'), skip = picks.filter(p => p.d === 'skip');
+  const toll = take.reduce((a, p) => a + p.s.toll, 0), saved = take.reduce((a, p) => a + p.s.saved, 0);
+  const allReg = segs.reduce((a, s) => a + s.reg, 0) + 6;
+  return { segs, picks, take, skip, toll, saved, total: allReg - saved, allReg, close: take.some(p => isClose(p.s)) || skip.some(p => isClose(p.s)) };
+}
+
+/* views */
+const VIEWS = ['now', 'drive', 'score', 'new'];
+function route() {
+  const v = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'now';
+  VIEWS.forEach(n => $('v-' + n).hidden = n !== v);
+  document.querySelectorAll('.tabs a').forEach(a => a.dataset.tab === v ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current'));
+  if (v !== 'drive') stopDrive(false);
+  ({ now: renderNow, drive: startDrive, score: renderScore, new: renderNew })[v]();
+  scrollTo(0, 0);
+}
+addEventListener('hashchange', route);
+
+/* TRIP */
+function signHTML(P) {
+  if (!P.picks.some(p => !p.s.off)) return `<div class="sign sign--free"><div><div class="sign__big">Free now ${STRAIGHT}</div><div class="sign__line">${esc(P.segs[0]?.note || 'No tolls right now.')}</div></div></div>`;
+  let cls, big, sub, arrow = UP;
+  const some = P.take.length && P.skip.length;
+  if (!P.take.length) { cls = P.close ? 'close' : 'skip'; big = P.close ? 'Close call' : 'Stay regular'; arrow = STRAIGHT; sub = mode === 'none' ? 'Your rule: no tolls' : P.close ? 'Just over your limit. Your call.' : 'No toll on this trip is worth it right now'; }
+  else if (some) { cls = P.close ? 'close' : 'take'; big = 'Take some'; sub = `Take ${P.take.map(p => shortName(p.s.name)).join(' and ')}. Skip ${P.skip.map(p => shortName(p.s.name)).join(' and ')}.`; }
+  else { cls = P.close ? 'close' : 'take'; big = P.close ? 'Close call' : 'Take it'; sub = P.close ? 'Right at your limit. Your call.' : mode === 'all' ? 'Your rule: all tolls' : P.take.length > 1 ? `Both tolls are worth it right now` : `Worth it right now`; }
+  const foot = P.take.length ? `<span>${money(P.toll)} saves ${P.saved} min</span><span>${cents(P.toll * 100 / Math.max(P.saved, 1))} a minute</span>` : `<span>${P.allReg} min, no tolls</span><span>$0</span>`;
+  return `<div class="sign sign--${cls}"><div><div class="sign__big">${big} ${arrow}</div><div class="sign__line">${esc(sub)}</div><div class="sign__foot num">${foot}</div></div></div>`;
+}
+function dirWord(t) { const C = CORR[t.c], m = Object.fromEntries(C.stops); return C.dirs[m[t.to] > m[t.from] ? 0 : 1]; }
+function renderNow() {
+  const t = trips.find(x => x.id === current), C = CORR[t.c], P = plan(t);
+  $('trips').innerHTML = trips.map(x => `<button data-id="${x.id}" aria-current="${x.id === current}">${esc(x.name)}</button>`).join('');
+  $('routeLine').innerHTML = `<span class="shield ${C.md ? 'md' : ''}">${C.shield}</span><div class="route">${esc(shortStop(t.from))} to ${esc(shortStop(t.to))}<small>${C.label} ${dirWord(t)}</small></div>`;
+  $('answer').innerHTML = signHTML(P);
+  $('times').innerHTML = `<div>Your plan<b class="num">${P.total} min</b></div><div>No tolls<b class="num">${P.allReg} min</b></div>`;
+  document.querySelectorAll('#modes button').forEach(b => b.setAttribute('aria-pressed', b.dataset.mode === mode));
+  $('lineBox').hidden = mode !== 'worth';
+  $('line').value = line;
+  $('lineVal').textContent = perHour ? `$${(line * 0.6).toFixed(0)} an hour` : `${cents(line)} a minute`;
+  $('unit').textContent = perHour ? 'Per minute' : 'Per hour';
+  $('lineNote').textContent = perHour ? `Same as ${cents(line)} for each minute saved.` : `Same as $${(line * 0.6).toFixed(0)} for each hour saved.`;
+  $('modeNote').textContent = { none: 'Never pay. We still show what you skipped and add it to your scoreboard.', worth: 'Each toll is checked on its own. You can tap any one below to change it.', all: 'Always take the express lanes. We track the time it buys you.' }[mode];
+  $('segHead').textContent = P.segs.length > 1 ? `${P.segs.length} tolls on this trip` : 'The toll on this trip';
+  $('segs').innerHTML = P.segs.map(s => {
+    const d = decide(t, s), rec = recommended(s), mine = (overrides[t.id] || {})[s.id] && d !== rec;
+    const price = s.off ? `<div class="price off">${s.off === 'closed' ? 'CLOSED' : 'NO TOLL'}</div>` : `<div class="price num"><small>${s.soon ? 'AT ' + fmtClock(s.reach) : 'NOW'}</small>${money(s.toll)}</div>`;
+    const mid = s.off ? `<div class="seg__mid"><span>${esc(s.note)}</span></div>` : `<div class="seg__mid num"><span>Saves <b>${s.saved} min</b></span><span><b>${cents(s.toll * 100 / s.saved)}</b> a minute</span><span>${s.mi} mi</span></div>`;
+    const pick = s.off ? '' : `<div class="pick"><button class="t" data-seg="${s.id}" data-d="take" aria-pressed="${d === 'take'}">Take it</button><button class="s" data-seg="${s.id}" data-d="skip" aria-pressed="${d === 'skip'}">Skip it</button></div>`;
+    const flag = mine ? `<div class="flag"><span>Your pick. Your rule says ${rec === 'take' ? 'take it' : 'skip it'}.</span><button data-reset="${s.id}">Undo</button></div>` : '';
+    return `<div class="seg"><div class="seg__top"><span class="shield ${C.md ? 'md' : ''}">${C.shield}</span><div class="seg__name">${esc(s.name)}<small>${esc(shortStop(s.entry))} to ${esc(shortStop(s.exit))}</small></div>${price}</div>${mid}${pick}${flag}</div>`;
+  }).join('');
+  const done = store.get('loggedToday', {})[t.id];
+  $('logBox').innerHTML = !P.picks.some(p => !p.s.off) ? '' : done
+    ? `<div class="logged"><span>Logged today's trip.</span><button id="unlog">Undo</button></div>`
+    : `<button class="ghost" id="logIt">Already drove it? Log it</button>`;
+  if ($('logIt')) $('logIt').onclick = () => logTrip(t, P);
+  if ($('unlog')) $('unlog').onclick = () => unlog(t);
+}
+$('trips').onclick = e => { const b = e.target.closest('[data-id]'); if (!b) return; current = b.dataset.id; store.set('current', current); renderNow(); };
+$('modes').onclick = e => { const b = e.target.closest('[data-mode]'); if (!b) return; mode = b.dataset.mode; overrides = {}; store.set('mode', mode); renderNow(); };
+$('line').oninput = e => { line = +e.target.value; store.set('line', line); renderNow(); };
+$('unit').onclick = () => { perHour = !perHour; store.set('perHour', perHour); renderNow(); };
+$('segs').onclick = e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.reset) delete (overrides[current] || {})[b.dataset.reset];
+  else if (b.dataset.seg) overrides[current] = { ...(overrides[current] || {}), [b.dataset.seg]: b.dataset.d };
+  renderNow();
+};
+$('startDrive').onclick = () => location.hash = 'drive';
+
+/* history + logging */
 function rng(seed) { return () => { seed = (seed * 1664525 + 1013904223) % 4294967296; return seed / 4294967296; }; }
 const NOW = new Date(2026, 10, 10, 7, 42);
 function sampleHistory() {
   const r = rng(66), out = [];
   for (let d = new Date(2025, 8, 2); d < new Date(2026, 10, 10); d.setDate(d.getDate() + 1)) {
-    const wd = d.getDay(); if (wd === 0 || wd === 6) continue;
-    if (r() < 0.12) continue; // days off, work from home
-    for (const leg of ['Morning', 'Evening']) {
+    if (d.getDay() === 0 || d.getDay() === 6 || r() < 0.12) continue;
+    for (const [leg, parts] of [['Morning', ['I-66 outside', 'I-66 inside']], ['Evening', ['I-66 inside']]]) {
       if (r() < 0.25) continue;
-      const peak = r();
-      const toll = +(leg === 'Morning' ? 2.5 + peak * 11 : 2 + peak * 8).toFixed(2);
-      const mins = Math.max(2, Math.round(3 + r() * 17));
-      const cpm = toll * 100 / mins;
-      const verdict = cpm <= 40 ? 'take' : cpm <= 60 ? 'close' : 'skip';
-      const follows = r() < 0.86;
-      const took = verdict === 'take' ? follows : verdict === 'skip' ? !follows : r() < 0.5;
-      out.push({ id: out.length + 1, at: new Date(d.getFullYear(), d.getMonth(), d.getDate(), leg === 'Morning' ? 7 : 17, 30).getTime(),
-        trip: leg, toll, mins, verdict, took, had: took && verdict === 'skip' && r() < 0.5 });
+      parts.forEach((part, k) => {
+        const toll = +(2 + r() * (leg === 'Morning' ? 10 : 6)).toFixed(2), mins = Math.max(2, Math.round(3 + r() * 14));
+        const rec = toll * 100 / mins <= 60 ? 'take' : 'skip', follow = r() < 0.87;
+        out.push({ id: out.length + 1, at: new Date(d.getFullYear(), d.getMonth(), d.getDate(), leg === 'Morning' ? 7 : 17, 30 + k * 12).getTime(), trip: leg, part, toll, mins, rec, took: rec === 'take' ? follow : !follow });
+      });
     }
   }
-  // one big skip, for the milestone
-  out.push({ id: out.length + 1, at: new Date(2026, 2, 3, 7, 50).getTime(), trip: 'Morning', toll: 34.25, mins: 16, verdict: 'skip', took: false, had: false });
-  // a clean recent streak
-  out.filter(l => l.at > new Date(2026, 9, 26).getTime()).forEach(l => { l.took = l.verdict === 'take' || (l.verdict === 'close' && l.took); l.had = false; });
+  out.push({ id: out.length + 1, at: new Date(2026, 2, 3, 7, 50).getTime(), trip: 'Morning', part: 'I-66 inside', toll: 34.25, mins: 16, rec: 'skip', took: false });
+  out.filter(l => l.at > new Date(2026, 9, 27).getTime()).forEach(l => l.took = l.rec === 'take');
   return out.sort((a, b) => a.at - b.at);
 }
 let logs = store.get('logs', null) || sampleHistory();
-const saveLogs = () => store.set('logs', logs);
-
-/* ---------- views ---------- */
-const $ = (id) => document.getElementById(id);
-const VIEWS = ['now', 'score', 'new'];
-function route() {
-  const v = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'now';
-  VIEWS.forEach(n => { $('v-' + n).hidden = n !== v; });
-  document.querySelectorAll('.tabs a').forEach(a => a.toggleAttribute('aria-current', a.dataset.tab === v) || (a.dataset.tab === v && a.setAttribute('aria-current', 'page')));
-  document.querySelectorAll('.tabs a').forEach(a => a.dataset.tab === v ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current'));
-  if (v === 'now') renderNow();
-  if (v === 'score') renderScore();
-  if (v === 'new') renderNew();
-  window.scrollTo(0, 0);
-}
-addEventListener('hashchange', route);
-
-/* ---------- NOW ---------- */
-function renderNow() {
-  const t = trips.find(x => x.id === current);
-  const v = verdictFor(t);
-  // chips
-  $('tripChips').innerHTML = trips.map(x => {
-    const vx = verdictFor(x);
-    return `<button class="chip" aria-pressed="${x.id === current}" data-id="${x.id}"><span class="dot" style="background:${vColor(vx.key)}"></span>${esc(x.name)}</button>`;
-  }).join('');
-  $('tRoute').textContent = `${t.from} → ${t.to}`;
-  $('tRoad').textContent = t.road;
-  $('verdict').style.setProperty('--v', vColor(v.key));
-  $('vWord').textContent = v.word; $('vMain').textContent = v.main; $('vSub').textContent = v.sub;
-  // sign
-  $('ledWhere').innerHTML = `Express<br>to ${esc(shortStop(t.to))}`;
-  $('ledPrice').textContent = t.free ? 'NO TOLL' : hov ? 'HOV FREE' : '$' + t.toll.toFixed(2);
-  $('ledPrice').classList.toggle('off', !!t.free);
-  const mx = Math.max(t.regular, t.express);
-  $('barE').style.width = (t.express / mx * 100) + '%';
-  $('barR').style.width = (t.regular / mx * 100) + '%';
-  $('minE').textContent = t.express + ' min';
-  $('minR').textContent = t.regular + ' min';
-  $('regName').textContent = t.regularName || 'Regular';
-  // line
-  $('lineRange').value = line; $('lineVal').textContent = cents(line) + ' a minute'; $('lineHr').textContent = `= $${(line * 0.6).toFixed(0)}/hr`;
-  $('hov').checked = hov;
-  // log
-  renderLogArea(t, v);
-  // chart
-  renderChart(t, v);
-  // other trips
-  $('mini').innerHTML = trips.filter(x => x.id !== current).map(x => {
-    const vx = verdictFor(x);
-    const small = vx.key === 'free' ? 'no toll' : x.toll ? money(x.toll) : '';
-    return `<button data-id="${x.id}"><span class="mini__name">${esc(x.name)}</span><span class="mini__route">${esc(x.from)} → ${esc(x.to)}</span><span class="pill" style="--v:${vColor(vx.key)}">${vx.key === 'free' ? 'Free' : vx.word}<small>${small}</small></span></button>`;
-  }).join('') || '<p class="fine">Save another trip with <a href="#new">New trip</a>.</p>';
-}
-function shortStop(s) { return s.replace(/\s*\(.*\)/, ''); }
-
-function renderLogArea(t, v) {
-  const done = todayLogs[t.id] && logs.find(l => l.id === todayLogs[t.id]);
-  if (t.free) { $('logArea').innerHTML = ''; return; }
-  if (done) {
-    $('logArea').innerHTML = `<div class="logged"><span>${done.took ? `Logged: you took it. <b>${done.mins} min bought</b> for ${money(done.toll)}.` : `Logged: you skipped it. <b>${money(done.toll)} kept.</b>`}</span><button class="linkbtn" id="undoLog">Undo</button></div>`;
-    $('undoLog').onclick = () => undo(t.id);
-    return;
-  }
-  $('logArea').innerHTML = `<div class="log">
-    <button class="btn btn--took" id="took">I took it<small>+${v.saved} min bought</small></button>
-    <button class="btn btn--skip" id="skip">I skipped it<small>+${hov ? '$0.00' : money(t.toll)} kept</small></button></div>`;
-  $('took').onclick = () => logTrip(t, v, true);
-  $('skip').onclick = () => logTrip(t, v, false);
-}
-
-function totals(list) {
-  const took = list.filter(l => l.took), sk = list.filter(l => !l.took);
-  return { kept: sk.reduce((s, l) => s + l.toll, 0), mins: took.reduce((s, l) => s + l.mins, 0), paid: took.reduce((s, l) => s + l.toll, 0), took, sk };
-}
-const MILESTONES = [
-  ...[100, 250, 500, 1000, 2000].map(n => ({ id: 'k' + n, kind: 'kept', n, title: `${money0(n)} kept`, test: (T) => T.kept })),
-  ...[10, 25, 50, 100].map(n => ({ id: 'h' + n, kind: 'hours', n, title: `${n} hours bought back`, test: (T) => T.mins / 60 })),
-];
-function logTrip(t, v, took) {
-  const before = totals(logs);
-  const toll = hov ? 0 : t.toll;
-  const l = { id: Date.now(), at: NOW.getTime(), trip: t.name, toll, mins: v.saved, verdict: v.key, took, had: false };
-  logs.push(l); todayLogs[t.id] = l.id; saveLogs(); store.set('today', todayLogs);
-  const after = totals(logs);
-  const hit = MILESTONES.find(m => m.test(before) < m.n && m.test(after) >= m.n);
+const totals = (list) => { const took = list.filter(l => l.took), sk = list.filter(l => !l.took); return { took, sk, kept: sk.reduce((a, l) => a + l.toll, 0), mins: took.reduce((a, l) => a + l.mins, 0), paid: took.reduce((a, l) => a + l.toll, 0) }; };
+const MILES = [...[100, 250, 500, 1000, 2000].map(n => ({ k: 'kept', n, title: `${money0(n)} kept` })), ...[10, 25, 50, 100].map(n => ({ k: 'hrs', n, title: `${n} hours bought back` }))];
+const mval = (m, T) => m.k === 'kept' ? T.kept : T.mins / 60;
+function logTrip(t, P) {
+  const before = totals(logs), ids = [];
+  P.picks.filter(p => !p.s.off).forEach((p, i) => { const l = { id: Date.now() + i, at: NOW.getTime(), trip: t.name, part: shortName(p.s.name), toll: p.s.toll, mins: p.s.saved, rec: recommended(p.s), took: p.d === 'take' }; logs.push(l); ids.push(l.id); });
+  store.set('logs', logs); const lt = store.get('loggedToday', {}); lt[t.id] = ids; store.set('loggedToday', lt);
+  const hit = MILES.find(m => mval(m, before) < m.n && mval(m, totals(logs)) >= m.n);
   renderNow();
-  if (hit) toast(`<b>Milestone:</b> ${hit.title}!`, 'See it', () => location.hash = 'score', true);
-  else toast(took ? `${v.saved} min bought for ${money(toll)}. Nice.` : `${money(toll)} kept. Nice.`, 'Undo', () => undo(t.id));
+  const kept = P.skip.reduce((a, p) => a + p.s.toll, 0);
+  if (hit) toast(`Milestone: ${hit.title}!`, 'See it', () => location.hash = 'score', true);
+  else toast([P.take.length && `${P.saved} min bought for ${money(P.toll)}`, P.skip.length && `${money(kept)} kept`].filter(Boolean).join(', ') + '.', 'Undo', () => unlog(t));
 }
-function undo(tripId) {
-  const id = todayLogs[tripId]; logs = logs.filter(l => l.id !== id); delete todayLogs[tripId];
-  saveLogs(); store.set('today', todayLogs); renderNow(); hideToast();
-}
+function unlog(t) { const lt = store.get('loggedToday', {}), ids = lt[t.id] || []; logs = logs.filter(l => !ids.includes(l.id)); delete lt[t.id]; store.set('logs', logs); store.set('loggedToday', lt); renderNow(); hideToast(); }
 
-/* chart: toll through the morning, today vs typical */
-function renderChart(t, v) {
-  if (t.free) { $('chartCard').hidden = true; return; }
-  $('chartCard').hidden = false;
-  const k = t.toll / 6.5;
-  const typical = [1.5,1.8,2.25,2.75,3.5,4.25,5,5.75,6.5,7.25,7.75,8,7.75,7.25,6.5,5.75,5,4.25,3.75,3.25,3,2.75,2.5,2.5,2.25,2.25,2,2].map(x => x * k);
-  const today = [1.5,1.5,2,2.5,3,3.75,4.5,5,5.5,5.75,6,6.25,6.5].map(x => x * k); // to 7:40
-  const W = 320, H = 120, L = 30, R = 8, T = 10, B = 22;
-  const maxY = Math.max(4, Math.ceil(Math.max(...typical) / 4) * 4);
-  const x = (i) => L + i * (W - L - R) / 27, y = (p) => T + (1 - p / maxY) * (H - T - B);
-  const path = (a) => a.map((p, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(p).toFixed(1)}`).join('');
-  const ticks = [0, maxY / 2, maxY];
-  const hours = [[3, '6'], [9, '7'], [15, '8'], [21, '9'], [27, '10 AM']];
-  const ni = today.length - 1;
-  $('chart').innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Toll today compared with a typical Tuesday">
-    ${ticks.map(tk => `<line x1="${L}" x2="${W - R}" y1="${y(tk)}" y2="${y(tk)}" stroke="var(--line)" stroke-width="1"/><text x="${L - 6}" y="${y(tk) + 3}" text-anchor="end">$${tk}</text>`).join('')}
-    ${hours.map(([i, s]) => `<text x="${x(i)}" y="${H - 6}" text-anchor="middle">${s}</text>`).join('')}
-    <path d="${path(typical)}" fill="none" stroke="var(--ink-3)" stroke-width="1.5" stroke-dasharray="4 3"/>
-    <path d="${path(today)}L${x(ni)},${y(0)}L${x(0)},${y(0)}Z" fill="var(--led)" opacity=".14"/>
-    <path d="${path(today)}" fill="none" stroke="var(--led)" stroke-width="2.5" stroke-linejoin="round"/>
-    <line x1="${x(ni)}" x2="${x(ni)}" y1="${T}" y2="${y(0)}" stroke="var(--ink-2)" stroke-width="1"/>
-    <circle cx="${x(ni)}" cy="${y(today[ni])}" r="4.5" fill="var(--led)" stroke="var(--surface)" stroke-width="2"/>
-    <text x="${x(ni) + 6}" y="${T + 8}" style="fill:var(--ink-2)">now</text>
-  </svg>`;
-  const later = typical[17], laterSaved = Math.max(1, v.saved - 3);
-  $('tip').innerHTML = hov ? 'You ride free while carpooling, so leave whenever suits you.'
-    : `It's a little under a typical Tuesday right now. <b>Leaving at 8:30?</b> It's usually about ${money(later)} and still saves ${laterSaved} min.`;
+/* DRIVE */
+let driveTimer = null, pos = 0, voice = store.get('voice', false), lastSay = '';
+function driveStops(t) { const C = CORR[t.c], m = Object.fromEntries(C.stops), a = m[t.from], b = m[t.to]; const l = C.stops.filter(([, x]) => x >= Math.min(a, b) && x <= Math.max(a, b)); return a < b ? l : l.reverse(); }
+function startDrive() {
+  const t = trips.find(x => x.id === current);
+  pos = 0; jitter = {}; lastSay = ''; $('changed').hidden = true;
+  renderDrive(t, null);
+  clearInterval(driveTimer); driveTimer = setInterval(() => tick(t), 2600);
+  try { navigator.wakeLock?.request('screen').catch(() => {}); } catch {}
 }
-
-/* ---------- SCOREBOARD ---------- */
-let range = store.get('range', 'month');
-function rangeStart(r) {
-  const d = new Date(NOW);
-  if (r === 'week') { d.setDate(d.getDate() - 6); d.setHours(0, 0, 0, 0); }
-  else if (r === 'month') { d.setDate(1); d.setHours(0, 0, 0, 0); }
-  else if (r === 'year') { return new Date(NOW.getFullYear(), 0, 1).getTime(); }
-  else return 0;
-  return d.getTime();
+function stopDrive(go = true) { clearInterval(driveTimer); driveTimer = null; jitter = {}; clockMin = 7 * 60 + 42; $('clock').textContent = 'Tue 7:42 AM'; if (go) location.hash = 'now'; }
+function tick(t) {
+  const stops = driveStops(t), P0 = plan(t), before = P0.picks.map(p => p.d).join();
+  pos++; clockMin += 3; $('clock').textContent = `Tue ${fmtClock(clockMin)} AM`;
+  const last = P0.segs.filter(s => !s.off).pop();
+  if (last) jitter[last.id] = (jitter[last.id] || 1) * (pos === 2 ? 1.5 : pos === 4 ? 0.6 : 1 + (Math.random() - .5) * .06);
+  const changed = plan(t).picks.map(p => p.d).join() !== before;
+  if (pos >= stops.length - 1) { pos = stops.length - 1; renderDrive(t, null); clearInterval(driveTimer); driveTimer = null; setTimeout(() => arrived(t), 900); return; }
+  renderDrive(t, changed ? last : null);
 }
-function buckets(r, list) {
-  // returns [{kept, mins}] per sub-period
-  let keys, keyOf;
-  if (r === 'week') { keys = [...Array(7)].map((_, i) => { const d = new Date(NOW); d.setDate(d.getDate() - 6 + i); return d.toDateString(); }); keyOf = (l) => new Date(l.at).toDateString(); }
-  else if (r === 'month') { keys = [...Array(NOW.getDate())].map((_, i) => i + 1 + ''); keyOf = (l) => new Date(l.at).getDate() + ''; }
-  else if (r === 'year') { keys = [...Array(NOW.getMonth() + 1)].map((_, i) => i + ''); keyOf = (l) => new Date(l.at).getMonth() + ''; }
-  else { keys = []; for (let d = new Date(2025, 8, 1); d <= NOW; d.setMonth(d.getMonth() + 1)) keys.push(d.getFullYear() + '-' + d.getMonth()); keyOf = (l) => { const d = new Date(l.at); return d.getFullYear() + '-' + d.getMonth(); }; }
-  const m = Object.fromEntries(keys.map(k => [k, { kept: 0, mins: 0 }]));
-  list.forEach(l => { const b = m[keyOf(l)]; if (b) l.took ? b.mins += l.mins : b.kept += l.toll; });
-  return keys.map(k => m[k]);
-}
-function bars(el, vals) {
-  const mx = Math.max(...vals, 1);
-  el.innerHTML = vals.map(v => v ? `<i style="height:${Math.max(8, v / mx * 100)}%"></i>` : '<i class="zero"></i>').join('');
-}
-const hm = (mins) => { const h = Math.floor(mins / 60), m = Math.round(mins % 60); return h ? `${h} h ${m} min` : `${m} min`; };
-const smart = (l) => l.verdict === 'close' || (l.verdict === 'take' && l.took) || (l.verdict === 'skip' && !l.took);
-
-function renderScore() {
-  document.querySelectorAll('#seg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.r === range));
-  const start = rangeStart(range);
-  const list = logs.filter(l => l.at >= start);
-  const T = totals(list);
-  const word = { week: 'this week', month: 'this month', year: 'this year', all: 'since you started' }[range];
-  $('sKept').textContent = money0(T.kept);
-  $('sKeptSub').textContent = `skipped ${T.sk.length} time${T.sk.length === 1 ? '' : 's'}`;
-  $('sBought').textContent = hm(T.mins);
-  $('sBoughtSub').textContent = `took it ${T.took.length} time${T.took.length === 1 ? '' : 's'}, ${money0(T.paid)}`;
-  const bk = buckets(range, list);
-  bars($('bKept'), bk.map(b => b.kept)); bars($('bBought'), bk.map(b => b.mins));
-  const tanks = T.kept / 48, movies = T.mins / 120;
-  $('sCompare').textContent = T.kept + T.mins ? `${word[0].toUpperCase() + word.slice(1)}: ${money0(T.kept)} ≈ ${tanks >= 1 ? tanks.toFixed(1) + ' tanks of gas' : Math.round(T.kept / 6) + ' coffees'} · ${hm(T.mins)} ≈ ${movies >= 1 ? movies.toFixed(1) + ' movies' : Math.round(T.mins / 3) + ' songs'}` : 'Nothing logged yet in this range.';
-  // averages
-  const cpm = T.mins ? T.paid * 100 / T.mins : 0;
-  $('aCpm').textContent = T.mins ? cents(cpm) : '–';
-  const pct = Math.min(100, cpm / 150 * 100);
-  $('aMeter').querySelector('i').style.width = pct + '%';
-  $('aMeter').querySelector('i').style.background = cpm <= line ? 'var(--take)' : 'var(--close)';
-  $('aMeter').querySelector('b').style.left = Math.min(100, line / 150 * 100) + '%';
-  $('aMeterNote').textContent = T.mins ? (cpm <= line ? `Under your ${cents(line)} line. You only buy time when it's a good deal.` : `Over your ${cents(line)} line. Worth a look at when you take it.`) : '';
-  $('aToll').textContent = T.took.length ? money(T.paid / T.took.length) : '–';
-  $('aMins').textContent = T.took.length ? Math.round(T.mins / T.took.length) + ' min' : '–';
-  const months = Math.max(1, (NOW - (start || logs[0]?.at || NOW)) / (30.4 * 864e5));
-  $('aMonth').textContent = money0(T.kept / months);
-  // smart calls
-  const counted = list.filter(l => !l.had), good = counted.filter(smart).length;
-  $('cBig').textContent = counted.length ? `${good} of ${counted.length}` : '–';
-  $('cSub').textContent = counted.length ? `${Math.round(good / counted.length * 100)}% matched the verdict ${word}` : '';
-  let streak = 0; for (let i = logs.length - 1; i >= 0; i--) { const l = logs[i]; if (l.had) continue; if (smart(l)) streak++; else break; }
-  $('cStreak').textContent = `🔥 ${streak} in a row`;
-  // milestones (all time)
-  const A = totals(logs);
-  const bigSkip = logs.some(l => !l.took && l.toll >= 30);
-  const nextKept = MILESTONES.filter(m => m.kind === 'kept'), nextHrs = MILESTONES.filter(m => m.kind === 'hours');
-  const gotK = nextKept.filter(m => A.kept >= m.n).pop(), todoK = nextKept.find(m => A.kept < m.n);
-  const gotH = nextHrs.filter(m => A.mins / 60 >= m.n).pop(), todoH = nextHrs.find(m => A.mins / 60 < m.n);
-  const badge = (got, title, sub, prog) => `<div class="badge ${got ? 'got' : ''}"><b>${got ? '✓ ' : ''}${title}</b><span>${sub}</span>${prog != null ? `<div class="prog"><i style="width:${prog}%"></i></div>` : ''}</div>`;
-  $('badges').innerHTML = [
-    gotK && badge(true, gotK.title, 'Earned'),
-    todoK && badge(false, todoK.title, `${money0(todoK.n - A.kept)} to go`, A.kept / todoK.n * 100),
-    gotH && badge(true, gotH.title, 'Earned'),
-    todoH && badge(false, todoH.title, `${hm((todoH.n * 60) - A.mins)} to go`, A.mins / 60 / todoH.n * 100),
-    badge(bigSkip, 'Skipped a $30+ toll', bigSkip ? 'Mar 3 · $34.25' : 'Not yet'),
-    badge(streak >= 25, '25 smart calls in a row', streak >= 25 ? 'Earned' : `${25 - streak} to go`, Math.min(100, streak / 25 * 100)),
-  ].filter(Boolean).join('');
-  // recent
-  const recent = list.slice(-6).reverse();
-  $('rows').innerHTML = recent.map(l => {
-    const d = new Date(l.at);
-    const when = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) + (d.getHours() < 12 ? ' · AM' : ' · PM');
-    return `<div class="row"><div><div class="row__what">${esc(l.trip)} · ${l.took ? 'took it' : 'skipped'}</div><div class="row__when">${when} · verdict: ${{ take: 'take it', close: 'close call', skip: 'skip it', free: 'free' }[l.verdict]}</div></div>
-      <div class="row__val ${l.took ? 'bought' : 'kept'} num">${l.took ? `+${l.mins} min · ${money(l.toll)}` : `+${money(l.toll)}`}</div>
-      ${l.took && l.verdict !== 'take' ? `<div class="row__act"><button class="had" aria-pressed="${l.had}" data-id="${l.id}">Had to</button></div>` : ''}</div>`;
-  }).join('') || '<p class="fine">No trips in this range yet.</p>';
-  // year in review
-  const Y = totals(logs.filter(l => l.at >= new Date(NOW.getFullYear(), 0, 1).getTime()));
-  const pricey = logs.filter(l => l.took && l.at >= new Date(NOW.getFullYear(), 0, 1).getTime()).sort((a, b) => b.toll / b.mins - a.toll / a.mins)[0];
-  $('yirBig').innerHTML = `You kept <em>${money0(Y.kept)}</em> and bought back <em>${Math.round(Y.mins / 60)} hours</em>.`;
-  $('yirSub').textContent = pricey ? `Priciest minute: ${cents(pricey.toll * 100 / pricey.mins)} on ${new Date(pricey.at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}. Your full year in review arrives in December.` : '';
-  // keep safe line
-  const saved = store.get('safe', false);
-  $('safeText').textContent = saved ? `Your stats are safe on any phone (${saved}).` : `${money0(A.kept)} kept, ${Math.round(A.mins / 60)} h bought.`;
-  $('safeBtn').hidden = !!saved;
-}
-$('seg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; range = b.dataset.r; store.set('range', range); renderScore(); });
-$('rows').addEventListener('click', e => { const b = e.target.closest('.had'); if (!b) return; const l = logs.find(x => x.id === +b.dataset.id); l.had = !l.had; saveLogs(); renderScore(); });
-$('yirShare').onclick = () => toast('Your share card is ready (in the real site this opens the share sheet).', 'OK', hideToast);
-
-/* keep-safe sheet */
-$('safeBtn').onclick = () => openSheet(`
-  <div class="sheet__grab"></div>
-  <h3>Keep your stats safe</h3>
-  <p>Your stats are already saved, with no sign-in. Add one of these so you can get them back on a new phone or a computer. No password.</p>
-  <button class="opt" data-safe="Face ID">Use Face ID or fingerprint<small>A passkey. Your phone does the work.</small></button>
-  <button class="opt" data-safe="email link">Email me a link<small>For older phones or a computer. We only use it to sign you in.</small></button>
-  <button class="linkbtn" data-safe="">Not now</button>`);
-$('sheet').addEventListener('click', e => {
-  const b = e.target.closest('[data-safe]'); if (!b) return;
-  if (b.dataset.safe) { store.set('safe', b.dataset.safe); toast('Done. Your stats are safe on any phone.', 'OK', hideToast); }
-  closeSheet(); renderScore();
-});
-function openSheet(html) { $('sheet').innerHTML = html; $('sheet').hidden = false; $('scrim').hidden = false; $('sheet').querySelector('button')?.focus(); }
-function closeSheet() { $('sheet').hidden = true; $('scrim').hidden = true; }
-$('scrim').onclick = closeSheet;
-addEventListener('keydown', e => { if (e.key === 'Escape') closeSheet(); });
-
-/* ---------- NEW TRIP ---------- */
-let draft = {};
-function opt(label, sel, data, sub = '', dis = false) { return `<button class="opt" aria-pressed="${sel}" ${data} ${dis ? 'disabled' : ''}>${label}${sub ? `<small>${sub}</small>` : ''}</button>`; }
-function renderNew() {
-  $('nRoad').innerHTML = Object.entries(ROADS).map(([k, r]) => opt(r.name.replace(' the Beltway', ''), draft.road === k, `data-road="${k}"`)).join('');
-  const R = ROADS[draft.road];
-  $('stepDir').hidden = !R;
-  if (R) $('nDir').innerHTML = Object.entries(R.dirs).map(([k, d]) => opt(d.split(' ')[0], draft.dir === k, `data-dir="${k}"`, d.split(' ').slice(1).join(' '))).join('');
-  const stops = R && draft.dir ? (Object.keys(R.dirs)[0] === draft.dir ? R.stops : [...R.stops].reverse()) : [];
-  $('stepFrom').hidden = !draft.dir;
-  $('nFrom').innerHTML = stops.slice(0, -1).map(s => `<button aria-pressed="${draft.from === s}" data-from="${esc(s)}">${esc(s)}</button>`).join('');
-  $('stepTo').hidden = draft.from == null;
-  const fi = stops.indexOf(draft.from);
-  $('nTo').innerHTML = stops.map((s, i) => i <= fi ? '' : `<button aria-pressed="${draft.to === s}" data-to="${esc(s)}">${esc(s)}<span class="fine">${(i - fi) * 3} mi</span></button>`).join('');
-  $('stepName').hidden = !draft.to;
-  $('nSave').disabled = !draft.to;
-  if (draft.to) {
-    const t = draftTrip(), v = verdictFor(t);
-    $('nPreview').innerHTML = `<span><b>${esc(t.from)} → ${esc(t.to)}</b><br><span class="fine">Right now: ${t.free ? 'no toll' : `${money(t.toll)}, saves ${t.regular - t.express} min`}</span></span><span class="pill" style="--v:${vColor(v.key)}">${v.key === 'free' ? 'Free' : v.word}</span>`;
+function renderDrive(t, changedSeg) {
+  const stops = driveStops(t), P = plan(t), C = CORR[t.c], m = Object.fromEntries(C.stops), up = m[t.to] > m[t.from];
+  const at = stops[pos][1];
+  const fwd = (x) => up ? x - at : at - x;
+  const live = P.picks.filter(p => !p.s.off);
+  const inside = live.find(p => fwd(m[p.s.entry]) < 0 && fwd(m[p.s.exit]) > 0);
+  const ahead = live.find(p => fwd(m[p.s.entry]) >= 0);
+  const remain = Math.abs(m[t.to] - at);
+  $('dTrip').textContent = `${t.name}: ${shortStop(t.from)} to ${shortStop(t.to)}`;
+  $('dEta').textContent = remain ? `${remain} mi to go` : 'Arrived';
+  let cls, dist, act, arrow = STRAIGHT, why, then = '';
+  if (!remain) { cls = 'take'; dist = 'You made it'; act = 'Arrived'; arrow = ''; why = P.take.length ? `${money(P.toll)} for ${P.saved} min saved` : 'No tolls today'; }
+  else if (ahead) {
+    const d = fwd(m[ahead.s.entry]), take = ahead.d === 'take', inTake = inside && inside.d === 'take';
+    cls = isClose(ahead.s) ? 'close' : take ? 'take' : 'skip';
+    dist = d ? `In ${d} mi · ${shortStop(ahead.s.entry)}` : `Now · ${shortStop(ahead.s.entry)}`;
+    act = take ? (inTake ? 'Stay in express' : 'Take express') : (inTake ? 'Exit express' : 'Stay regular');
+    arrow = take && !inTake ? UP : STRAIGHT;
+    why = take ? `${money(ahead.s.toll)} saves ${ahead.s.saved} min · ${cents(ahead.s.toll * 100 / ahead.s.saved)}/min`
+      : mode === 'none' ? `Your rule: no tolls (${money(ahead.s.toll)})` : `${isClose(ahead.s) ? 'Close call. ' : ''}${money(ahead.s.toll)} for ${ahead.s.saved} min is over your limit`;
+    const nx = live[live.indexOf(ahead) + 1];
+    then = nx ? `${nx.d === 'take' ? 'Take' : 'Skip'} ${shortName(nx.s.name)} · ${money(nx.s.toll)}, saves ${nx.s.saved} min` : `Exit at ${shortStop(t.to)}`;
+  } else if (inside && inside.d === 'take') { cls = 'take'; dist = 'In the express lanes'; act = 'Stay in express'; why = `Until ${shortStop(inside.s.exit)} · ${fwd(m[inside.s.exit])} mi`; then = `Exit at ${shortStop(t.to)}`; }
+  else { cls = 'skip'; dist = 'No more tolls'; act = 'Stay regular'; why = `Exit at ${shortStop(t.to)}`; }
+  $('next').className = `next sign--${cls}`;
+  $('next').innerHTML = `<div><div class="next__dist num">${esc(dist)}</div><div class="next__do">${act} ${arrow}</div><div class="next__why num">${esc(why)}</div></div>`;
+  $('then').hidden = !then; $('then').innerHTML = `<span class="h">Then</span><span class="num">${esc(then)}</span>`;
+  if (changedSeg) {
+    const s = P.segs.find(x => x.id === changedSeg.id);
+    $('changed').hidden = false;
+    $('changed').textContent = `Changed: ${shortName(s.name)} is now ${money(s.toll)} for ${s.saved} min. ${decide(t, s) === 'take' ? 'Now worth it.' : 'No longer worth it.'}`;
+    say($('changed').textContent, true);
   }
+  $('progress').innerHTML = stops.map(([n, x], i) => {
+    const lane = i === stops.length - 1 ? 'exit' : live.find(p => p.d === 'take' && (up ? m[p.s.entry] <= x && m[p.s.exit] > x : m[p.s.entry] >= x && m[p.s.exit] < x)) ? 'express' : 'regular';
+    return `<div class="stop ${i < pos ? 'past' : i === pos ? 'here' : ''}"><i></i><span>${esc(n)}</span><span class="lane ${lane === 'express' ? 'x' : ''}">${lane}</span></div>`;
+  }).join('');
+  say(`${dist}. ${act}. ${why}`);
 }
-function draftTrip() {
-  const R = ROADS[draft.road], stops = Object.keys(R.dirs)[0] === draft.dir ? R.stops : [...R.stops].reverse();
-  const seg = stops.indexOf(draft.to) - stops.indexOf(draft.from);
-  const dirWord = R.dirs[draft.dir].split(' ')[0];
-  const offPeak = (draft.road === '66i' && draft.dir === 'W') || (draft.road === '95' && draft.dir === 'S') || (draft.road === '395' && draft.dir === 'S');
-  const express = 3 + seg * 3, regular = express + seg * 2 + (draft.road === '66i' ? 4 : 1);
-  return { id: 't' + Date.now(), name: $('nName').value.trim() || `${shortStop(draft.from)} to ${shortStop(draft.to)}`, from: draft.from, to: draft.to,
-    road: `${R.short} ${dirWord}${draft.road === '66i' ? ', inside the Beltway' : draft.road === 'icc' ? ' · vs the free route on local roads' : draft.road !== '66o' ? ' Express' : ''}`,
-    regularName: R.md ? 'Free route' : 'Regular',
-    toll: offPeak ? 0 : +(1.25 + seg * 1.35).toFixed(2), express: offPeak ? express : express, regular: offPeak ? express : regular,
-    free: offPeak ? 'Tolls run the other way this time of day. Free right now.' : false };
+function say(text, force) {
+  if (!voice || (!force && text === lastSay)) return; lastSay = text;
+  try { speechSynthesis.speak(new SpeechSynthesisUtterance(text.replace(/\/min/g, ' a minute').replace(/·/g, ','))); } catch {}
 }
-$('v-new').addEventListener('click', e => {
-  const b = e.target.closest('button'); if (!b || b.disabled) return;
-  if (b.dataset.road) draft = { road: b.dataset.road };
-  else if (b.dataset.dir) draft = { road: draft.road, dir: b.dataset.dir };
-  else if (b.dataset.from) draft = { ...draft, from: b.dataset.from, to: undefined };
-  else if (b.dataset.to) draft.to = b.dataset.to;
-  else return;
-  renderNew();
-  const next = ['stepDir', 'stepFrom', 'stepTo', 'stepName'].map($).find(s => !s.hidden && !s.querySelector('[aria-pressed="true"]') && s.id !== 'stepName') || $('stepName');
-  if (!next.hidden) next.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center' });
-});
-$('nName').addEventListener('input', () => draft.to && renderNew());
-$('nSave').onclick = () => {
-  const t = draftTrip(); trips.push(t); current = t.id; store.set('trips', trips); store.set('current', current);
-  draft = {}; $('nName').value = ''; location.hash = 'now';
-  setTimeout(() => toast(`Saved “${esc(t.name)}”. It'll be here every time you open the site.`, 'OK', hideToast), 50);
+function arrived(t) {
+  const P = plan(t), kept = P.skip.reduce((a, p) => a + p.s.toll, 0);
+  openSheet(`<h3>You made it</h3><p>${P.take.length ? `You took ${P.take.length} toll${P.take.length > 1 ? 's' : ''} for ${money(P.toll)} and saved about ${P.saved} min.` : 'No tolls today.'}${P.skip.length ? ` Skipping ${P.skip.length} kept ${money(kept)}.` : ''}</p>
+    <button class="big-btn green" data-act="log">Log it</button><button class="ghost" data-act="no">Don't log this one</button>`);
+  $('sheet').onclick = e => { const b = e.target.closest('[data-act]'); if (!b) return; closeSheet(); const P2 = plan(t); stopDrive(); if (b.dataset.act === 'log') setTimeout(() => logTrip(t, P2), 80); };
+}
+$('voice').onclick = () => { voice = !voice; store.set('voice', voice); $('voice').textContent = 'Voice: ' + (voice ? 'on' : 'off'); lastSay = ''; };
+$('voice').textContent = 'Voice: ' + (voice ? 'on' : 'off');
+$('endDrive').onclick = () => stopDrive();
+
+/* SCOREBOARD */
+let range = store.get('range', 'month');
+const smart = (l) => (l.rec === 'take') === l.took;
+function renderScore() {
+  document.querySelectorAll('#ranges button').forEach(b => b.setAttribute('aria-pressed', b.dataset.r === range));
+  const start = range === 'week' ? NOW - 6 * 864e5 : range === 'month' ? new Date(2026, 10, 1).getTime() : range === 'year' ? new Date(2026, 0, 1).getTime() : 0;
+  const list = logs.filter(l => l.at >= start), T = totals(list), h = Math.floor(T.mins / 60), mm = T.mins % 60;
+  $('bTitle').textContent = { week: 'Last 7 days', month: 'November', year: '2026', all: 'Since Sept 2025' }[range];
+  $('bKept').textContent = money0(T.kept); $('bKeptSub').textContent = `kept, ${T.sk.length} skips`;
+  $('bBought').textContent = h ? `${h}h ${mm}m` : `${mm}m`; $('bBoughtSub').textContent = `bought for ${money0(T.paid)}`;
+  $('bCpm').textContent = T.mins ? `${cents(T.paid * 100 / T.mins)} (limit ${cents(line)})` : '–';
+  $('bAvg').textContent = T.took.length ? money(T.paid / T.took.length) : '–';
+  $('bCalls').textContent = list.length ? `${list.filter(smart).length} of ${list.length}` : '–';
+  let st = 0; for (let i = logs.length - 1; i >= 0 && smart(logs[i]); i--) st++;
+  $('bStreak').textContent = `${st} in a row`;
+  $('bCompare').textContent = T.kept >= 20 ? `${money0(T.kept)} is about ${(T.kept / 48).toFixed(1)} tanks of gas. ${hm(T.mins)} is about ${Math.max(1, Math.round(T.mins / 120))} movie${T.mins >= 180 ? 's' : ''}.` : '';
+  const A = totals(logs);
+  const ms = ['kept', 'hrs'].flatMap(k => { const all = MILES.filter(x => x.k === k); return [all.filter(x => mval(x, A) >= x.n).pop(), all.find(x => mval(x, A) < x.n)]; }).filter(Boolean);
+  const big = logs.find(l => !l.took && l.toll >= 30);
+  $('miles').innerHTML = ms.map(x => { const got = mval(x, A) >= x.n; return `<div class="mile ${got ? 'got' : ''}"><b>${x.title}</b><span>${got ? 'Done' : (x.k === 'kept' ? money0(x.n - A.kept) : Math.ceil(x.n - A.mins / 60) + ' hours') + ' to go'}</span>${got ? '' : `<div class="bar"><i style="width:${mval(x, A) / x.n * 100}%"></i></div>`}</div>`; }).join('')
+    + `<div class="mile ${big ? 'got' : ''}"><b>Skipped a $30+ toll</b><span>${big ? 'Mar 3 · $34.25' : 'Not yet'}</span></div>`
+    + `<div class="mile ${st >= 25 ? 'got' : ''}"><b>25 smart calls in a row</b><span>${st >= 25 ? 'Done' : 25 - st + ' to go'}</span>${st >= 25 ? '' : `<div class="bar"><i style="width:${st / 25 * 100}%"></i></div>`}</div>`;
+  $('recent').innerHTML = list.slice(-6).reverse().map(l => `<div class="r"><div><b>${esc(l.part)} · ${l.took ? 'took it' : 'skipped'}</b><small>${new Date(l.at).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} · ${esc(l.trip)}</small></div><span class="v num">${l.took ? `+${l.mins} min` : `+${money(l.toll)}`}</span></div>`).join('') || '<p class="note">Nothing logged in this range yet.</p>';
+  const safe = store.get('safe', false);
+  $('safeText').textContent = safe ? `Saved on any phone with ${safe}.` : 'Your stats are saved. Want them on any phone?';
+  $('safeBtn').hidden = !!safe;
+}
+const hm = (mins) => { const h = Math.floor(mins / 60); return h ? `${h} h ${mins % 60} min` : `${mins} min`; };
+$('ranges').onclick = e => { const b = e.target.closest('[data-r]'); if (!b) return; range = b.dataset.r; store.set('range', range); renderScore(); };
+$('safeBtn').onclick = () => {
+  openSheet(`<h3>Keep your stats on any phone</h3><p>No password, no account to manage. Pick one:</p>
+    <button class="big-btn" data-safe="Face ID">Use Face ID or fingerprint</button><button class="ghost" data-safe="an email link">Email me a link</button><button class="ghost" data-safe="" style="border-color:transparent">Not now</button>`);
+  $('sheet').onclick = e => { const b = e.target.closest('[data-safe]'); if (!b) return; if (b.dataset.safe) { store.set('safe', b.dataset.safe); toast('Done. Your stats are safe.', 'OK', hideToast); } closeSheet(); renderScore(); };
 };
 
-/* ---------- shared bits ---------- */
-function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
-let toastTimer;
-function toast(html, btn, fn, cheer = false) {
-  $('toastText').innerHTML = html; $('toastBtn').textContent = btn; $('toastBtn').onclick = fn;
-  $('toast').classList.toggle('cheer', cheer); $('toast').classList.add('show');
-  clearTimeout(toastTimer); toastTimer = setTimeout(hideToast, cheer ? 6000 : 4500);
+/* NEW TRIP */
+let draft = {};
+function renderNew() {
+  $('nRoad').innerHTML = Object.entries(CORR).map(([k, C]) => `<button data-c="${k}" aria-pressed="${draft.c === k}"><span class="shield ${C.md ? 'md' : ''}">${C.shield}</span>${C.label}</button>`).join('');
+  const C = CORR[draft.c];
+  $('nFromH').hidden = $('nFrom').hidden = !C;
+  if (C) $('nFrom').innerHTML = C.stops.map(([n]) => `<button data-from="${esc(n)}" aria-pressed="${draft.from === n}">${esc(n)}</button>`).join('');
+  $('nToH').hidden = $('nTo').hidden = !draft.from;
+  if (draft.from) { const m = Object.fromEntries(C.stops); $('nTo').innerHTML = C.stops.filter(([n]) => n !== draft.from).map(([n, x]) => `<button data-to="${esc(n)}" aria-pressed="${draft.to === n}">${esc(n)}<span class="tag">${Math.abs(x - m[draft.from])} mi</span></button>`).join(''); }
+  $('nNameBox').hidden = !draft.to; $('nSave').disabled = !draft.to;
+  if (draft.to) { const t = { id: 'x', ...draft }, P = plan(t); $('nSum').textContent = `${CORR[t.c].label} ${dirWord(t)}, ${P.segs.length} toll${P.segs.length > 1 ? 's' : ''}. We worked out the direction for you.`; }
 }
-function hideToast() { $('toast').classList.remove('show'); }
+$('v-new').onclick = e => {
+  const b = e.target.closest('button'); if (!b || b.id === 'nSave') return;
+  if (b.dataset.c) draft = { c: b.dataset.c }; else if (b.dataset.from) draft = { c: draft.c, from: b.dataset.from }; else if (b.dataset.to) draft.to = b.dataset.to; else return;
+  renderNew();
+  const next = !draft.from ? $('nFrom') : !draft.to ? $('nTo') : $('nNameBox');
+  next.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+};
+$('nSave').onclick = () => {
+  const t = { id: 't' + Date.now(), name: $('nName').value.trim() || `${shortStop(draft.from)} to ${shortStop(draft.to)}`, ...draft };
+  trips.push(t); current = t.id; store.set('trips', trips); store.set('current', current); draft = {}; $('nName').value = '';
+  location.hash = 'now'; setTimeout(() => toast(`Saved "${esc(t.name)}".`, 'OK', hideToast), 50);
+};
 
-$('tripChips').addEventListener('click', e => { const b = e.target.closest('[data-id]'); if (b) { current = b.dataset.id; store.set('current', current); renderNow(); } });
-$('mini').addEventListener('click', e => { const b = e.target.closest('[data-id]'); if (b) { current = b.dataset.id; store.set('current', current); renderNow(); window.scrollTo({ top: 0, behavior: 'smooth' }); } });
-$('lineRange').addEventListener('input', e => { line = +e.target.value; store.set('line', line); renderNow(); });
-$('hov').addEventListener('change', e => { hov = e.target.checked; store.set('hov', hov); renderNow(); });
+/* toast + sheet */
+let tt;
+function toast(html, btn, fn, win = false) { $('toastText').innerHTML = html; $('toastBtn').textContent = btn; $('toastBtn').onclick = fn; $('toast').classList.toggle('win', win); $('toast').classList.add('show'); clearTimeout(tt); tt = setTimeout(hideToast, 5000); }
+function hideToast() { $('toast').classList.remove('show'); }
+function openSheet(html) { $('sheet').innerHTML = html; $('sheet').hidden = $('scrim').hidden = false; $('sheet').querySelector('button')?.focus(); }
+function closeSheet() { $('sheet').hidden = $('scrim').hidden = true; }
+$('scrim').onclick = closeSheet;
+addEventListener('keydown', e => e.key === 'Escape' && closeSheet());
 
 route();
 </script>
