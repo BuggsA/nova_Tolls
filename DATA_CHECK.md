@@ -46,6 +46,21 @@ This is still the harder half. Options, best first:
 
 ---
 
+## How the prices stay current (nobody types them in)
+
+The dynamic prices update themselves. SmarterRoads is a live feed, not a list we copy:
+1. **Once:** a person signs up and gets an access token. It's stored as a secret in Cloudflare, never in the code.
+2. **Every 2 to 5 minutes, automatically:** a scheduled job in the Worker (the same kind that checks school closings
+   every 2 minutes on Is There School?) fetches the latest tolls and travel times, saves them, and adds them to the history.
+3. **Every visitor** gets those saved numbers instantly. Drive mode checks for new numbers every minute while it's open.
+4. **If a feed stops answering,** the site shows the last price with its age ("as of 7:38") and a "check the sign" note,
+   and a daily check emails us. It never shows a stale price as if it were live.
+
+What does need a person, about once a year: the **fixed** rate tables (ICC, Dulles Toll Road, Greenway, Maryland
+bridges) when the authorities announce new rates, and the list of entrances if a road adds one.
+
+---
+
 ## What this changes in the plan
 
 - **Launch roads:** I-66 inside, 495 Express, 95/395 Express (all from SmarterRoads), plus Maryland's ICC (published
