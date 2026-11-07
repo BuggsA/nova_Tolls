@@ -1,0 +1,29 @@
+# Worth the Toll? (DMV): Cloudflare Worker
+name = "worth-the-toll"
+main = "src/worker.js"
+compatibility_date = "2025-09-01"
+keep_vars = true
+
+# Fetch the live toll feeds every 5 minutes (I-66 updates every 6, 95/495 every 10)
+[triggers]
+crons = ["*/5 * * * *"]
+
+[observability]
+enabled = true
+
+# Newest prices, read by every visitor.
+#   npx wrangler kv namespace create TOLLS   → paste the id below
+[[kv_namespaces]]
+binding = "TOLLS"
+id = "PASTE_KV_ID_HERE"
+
+# Price history.
+#   npx wrangler d1 create worth-the-toll   → paste the database_id below
+#   npx wrangler d1 execute worth-the-toll --remote --file=schema.sql
+[[d1_databases]]
+binding = "DB"
+database_name = "worth-the-toll"
+database_id = "PASTE_D1_ID_HERE"
+
+# Secrets (never in this file):
+#   npx wrangler secret put SR_I66_URL      → paste the full I-66 feed link from SmarterRoads, token included

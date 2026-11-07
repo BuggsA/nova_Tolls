@@ -28,6 +28,24 @@ Not in the catalog: **I-66 outside the Beltway** tolls and INRIX travel times.
 **Our job's timing:** fetch every 5 minutes. That catches every I-66 update (6 min) and every 95/495 update (10 min)
 without wasting requests.
 
+## I-66 outside the Beltway: how we'll try to cover it
+
+The I-66 feed is inside the Beltway only. For the outside stretch (Beltway to Gainesville), in order:
+1. **The road signs feed.** SmarterRoads' "DMS Status (Active)" lists what every VDOT electronic sign says, every minute.
+   If the outside-the-Beltway toll price signs report through VDOT, their messages include the prices. Test: once the
+   Worker is live, add that feed and log any sign message on I-66 that contains a "$" during Monday's rush hour.
+2. **Ask the operator.** I-66 Express Mobility Partners runs those lanes. Email them asking for a price feed or
+   permission to show their prices (draft below). Their website blocks automated visitors, so we don't read it.
+3. **Until then:** trips show the outside stretch honestly: "Price on the sign, not available here yet", with the
+   travel times (VDOT's travel time feed still covers the road) and the "usually" range once people log trips.
+
+Draft email (send from the site's address):
+> Hello, I run Worth the Toll?, a free site that helps DMV drivers decide whether the express lanes are worth it for
+> their trip, using VDOT's public SmarterRoads toll feeds for I-66 inside the Beltway and the 95/495 Express Lanes.
+> We'd like to include the I-66 Express Lanes outside the Beltway. Do you publish current toll prices as a data feed,
+> or could you give us permission to show them? We'd link to your site and always tell drivers the posted sign price
+> is the one they pay. Thank you!
+
 ## Toll prices, road by road
 
 | Road | Source | Status | Notes |
