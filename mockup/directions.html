@@ -1,0 +1,445 @@
+<title>Worth the Toll? Directions</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Overpass:wght@600;800;900&family=Barlow:wght@500;600;700&family=Barlow+Condensed:wght@600;700&family=Archivo:wght@400;500;700;900&family=Public+Sans:wght@400;600;700;800&family=IBM+Plex+Sans+Condensed:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: a review sheet. Each direction is a row: what it is and why, then the same two screens drawn in that style.
+   The page itself stays neutral so the six directions do the talking. */
+:root {
+  --bg: #f3f3f1; --surface: #ffffff; --ink: #18181a; --ink-2: #5d5d63; --line: #dcdcd8; --accent: #18181a;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #141416; --surface: #1d1d20; --ink: #ececee; --ink-2: #a2a2a8; --line: #313136; --accent: #ececee; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --bg: #141416; --surface: #1d1d20; --ink: #ececee; --ink-2: #a2a2a8; --line: #313136; --accent: #ececee; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.55 var(--font); }
+.wrap { max-width: 1120px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 40px 64px; }
+h1 { font-size: clamp(28px, 5vw, 40px); line-height: 1.1; margin: 0 0 12px; letter-spacing: -.02em; text-wrap: balance; }
+.lede { max-width: 62ch; color: var(--ink-2); margin: 0; font-size: 16px; }
+.tells { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; margin: 32px 0 8px; padding: 24px 0; border-top: 2px solid var(--ink); border-bottom: 1px solid var(--line); }
+.tells h2 { font-size: 15px; margin: 0 0 8px; }
+.tells ul { margin: 0; padding-left: 18px; color: var(--ink-2); font-size: 14px; display: grid; gap: 4px; }
+
+.dir { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; padding: 48px 0; border-bottom: 1px solid var(--line); }
+@media (min-width: 900px) { .dir { grid-template-columns: 300px minmax(0, 1fr); gap: 40px; } }
+.dir__n { font-size: 13px; font-weight: 700; color: var(--ink-2); letter-spacing: .04em; }
+.dir h2 { font-size: 26px; line-height: 1.15; margin: 4px 0 10px; letter-spacing: -.01em; }
+.dir > div > p { margin: 0 0 12px; color: var(--ink-2); font-size: 14.5px; max-width: 60ch; }
+.dir dl { margin: 16px 0 0; display: grid; gap: 10px; font-size: 14px; }
+.dir dt { font-weight: 700; }
+.dir dd { margin: 0; color: var(--ink-2); }
+.phones { display: flex; gap: 20px; flex-wrap: wrap; min-width: 0; }
+.ph { width: 330px; max-width: 100%; border-radius: 28px; overflow: hidden; box-shadow: 0 0 0 1px var(--line), 0 10px 30px rgba(0,0,0,.08); flex: none; }
+.cap { font-size: 12.5px; color: var(--ink-2); margin-top: 8px; text-align: center; }
+.end { padding-top: 40px; max-width: 62ch; }
+.end h2 { font-size: 22px; margin: 0 0 8px; }
+.end p { color: var(--ink-2); margin: 0 0 8px; }
+.num { font-variant-numeric: tabular-nums; }
+
+/* ============ 1. ROAD SIGN ============ */
+.d1 { background: #f4f4f0; color: #111; font-family: "Overpass", sans-serif; padding: 18px 16px 20px; display: grid; gap: 14px; }
+.d1 .bar { display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 15px; }
+.d1 .bar span { font-weight: 600; font-size: 13px; color: #555; }
+.d1 .shield { display: inline-grid; place-items: center; width: 30px; height: 30px; background: #fff; border: 2px solid #111; border-radius: 4px 4px 14px 14px; font: 900 12px/1 "Overpass"; margin-right: 8px; vertical-align: middle; }
+.d1 .route { font-weight: 800; font-size: 17px; display: flex; align-items: center; }
+.d1 .sign { background: #00663a; color: #fff; border-radius: 10px; padding: 4px; }
+.d1 .sign > div { border: 2.5px solid #fff; border-radius: 7px; padding: 14px 14px 12px; display: grid; gap: 2px; }
+.d1 .big { font: 900 44px/0.95 "Overpass"; letter-spacing: .01em; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; }
+.d1 .big svg { width: 38px; height: 38px; }
+.d1 .sub { font-weight: 600; font-size: 17px; }
+.d1 .toll { background: #111; color: #fff; border-radius: 8px; padding: 10px 14px; display: grid; grid-template-columns: 1fr auto; align-items: center; font-weight: 800; }
+.d1 .toll b { font: 900 30px/1 "Overpass"; color: #ffd400; }
+.d1 .toll small { display: block; font-weight: 600; font-size: 12px; color: #bbb; letter-spacing: .06em; }
+.d1 .times { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.d1 .times div { background: #fff; border: 2px solid #111; border-radius: 8px; padding: 8px 12px; font-weight: 600; font-size: 13px; }
+.d1 .times b { display: block; font: 900 26px/1.1 "Overpass"; }
+.d1 .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.d1 .btns span { border-radius: 8px; padding: 12px; text-align: center; font-weight: 800; font-size: 15px; border: 2px solid #111; }
+.d1 .btns span:first-child { background: #111; color: #fff; }
+.d1 .score { background: #0b4fa3; color: #fff; border-radius: 10px; padding: 4px; }
+.d1 .score > div { border: 2.5px solid #fff; border-radius: 7px; padding: 12px 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px 12px; }
+.d1 .score h4 { grid-column: 1 / -1; margin: 0; font-weight: 800; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; }
+.d1 .score b { display: block; font: 900 30px/1 "Overpass"; }
+.d1 .score span { font-size: 13px; font-weight: 600; }
+.d1 .row { grid-column: 1 / -1; border-top: 2px solid rgba(255,255,255,.5); padding-top: 8px; display: flex; justify-content: space-between; font-weight: 600; font-size: 14px; }
+
+/* ============ 2. DEPARTURE BOARD (transit-app style) ============ */
+.d2 { background: #fff; color: #101114; font-family: "Barlow", sans-serif; display: grid; }
+.d2 .top { padding: 16px 18px 12px; display: flex; justify-content: space-between; align-items: baseline; }
+.d2 .top b { font: 700 20px/1 "Barlow Condensed"; letter-spacing: .01em; }
+.d2 .top span { font-size: 13px; color: #6b6e75; font-weight: 500; }
+.d2 .trip { padding: 0 18px 12px; display: flex; gap: 10px; align-items: center; }
+.d2 .badge { background: #e8590c; color: #fff; font: 700 15px/1 "Barlow Condensed"; padding: 6px 8px; border-radius: 6px; }
+.d2 .trip div { font-weight: 600; font-size: 16px; line-height: 1.2; }
+.d2 .trip small { display: block; color: #6b6e75; font-weight: 500; font-size: 13px; }
+.d2 .board { margin: 0 12px; border-radius: 14px; overflow: hidden; border: 1px solid #e3e4e8; }
+.d2 .ln { display: grid; grid-template-columns: 1fr auto auto; gap: 14px; align-items: center; padding: 12px 14px; border-top: 1px solid #e3e4e8; }
+.d2 .ln:first-child { border-top: 0; }
+.d2 .ln.win { background: #e9f6ee; }
+.d2 .ln .nm { font-weight: 600; font-size: 15px; }
+.d2 .ln .nm small { display: block; color: #6b6e75; font-weight: 500; font-size: 12.5px; }
+.d2 .ln .mn { font: 700 34px/1 "Barlow Condensed"; text-align: right; }
+.d2 .ln .mn small { font-size: 15px; margin-left: 2px; }
+.d2 .ln .pr { font: 700 17px/1 "Barlow"; min-width: 56px; text-align: right; color: #6b6e75; }
+.d2 .ln.win .pr { color: #101114; }
+.d2 .ans { margin: 12px 12px 0; background: #137a43; color: #fff; border-radius: 14px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.d2 .ans b { font: 700 26px/1 "Barlow Condensed"; text-transform: uppercase; letter-spacing: .02em; }
+.d2 .ans span { font-weight: 600; font-size: 14px; text-align: right; line-height: 1.3; }
+.d2 .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px; }
+.d2 .btns span { border-radius: 12px; padding: 12px; text-align: center; font-weight: 700; background: #f1f2f4; }
+.d2 .sc { border-top: 8px solid #f1f2f4; padding: 14px 18px 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.d2 .sc h4 { grid-column: 1/-1; margin: 0; font: 700 18px/1 "Barlow Condensed"; display: flex; justify-content: space-between; }
+.d2 .sc h4 span { font: 500 13px "Barlow"; color: #6b6e75; }
+.d2 .sc b { display: block; font: 700 32px/1 "Barlow Condensed"; }
+.d2 .sc .g { color: #137a43; } .d2 .sc .bl { color: #1b5fd1; }
+.d2 .sc small { color: #6b6e75; font-size: 13px; font-weight: 500; }
+.d2 .sc .meta { grid-column: 1/-1; display: flex; gap: 8px; flex-wrap: wrap; }
+.d2 .sc .meta span { background: #f1f2f4; border-radius: 6px; padding: 4px 8px; font-size: 13px; font-weight: 600; }
+
+/* ============ 3. BIG TYPE (Swiss) ============ */
+.d3 { background: #fff; color: #0a0a0a; font-family: "Archivo", sans-serif; padding: 20px 20px 22px; display: grid; gap: 16px; }
+.d3 .top { display: flex; justify-content: space-between; font-size: 13px; font-weight: 500; border-bottom: 3px solid #0a0a0a; padding-bottom: 10px; }
+.d3 .top b { font-weight: 900; }
+.d3 .rt { font-size: 15px; font-weight: 500; color: #444; }
+.d3 .rt b { color: #0a0a0a; font-weight: 700; }
+.d3 h3 { font: 900 64px/0.9 "Archivo"; letter-spacing: -.04em; margin: 0; color: #0a7a3e; }
+.d3 .why { font-size: 22px; font-weight: 700; line-height: 1.2; letter-spacing: -.01em; }
+.d3 .why span { color: #666; font-weight: 500; }
+.d3 .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; border-top: 3px solid #0a0a0a; }
+.d3 .grid div { padding: 10px 0 0; font-size: 12px; font-weight: 500; color: #555; }
+.d3 .grid b { display: block; font: 900 26px/1 "Archivo"; color: #0a0a0a; letter-spacing: -.02em; margin-top: 4px; }
+.d3 .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 3px solid #0a0a0a; }
+.d3 .btns span { padding: 13px; text-align: center; font-weight: 700; }
+.d3 .btns span:first-child { background: #0a0a0a; color: #fff; }
+.d3 .sc { border-top: 3px solid #0a0a0a; padding-top: 10px; display: grid; gap: 6px; }
+.d3 .sc .k { font-size: 13px; font-weight: 500; color: #555; display: flex; justify-content: space-between; }
+.d3 .sc .k b { color: #0a0a0a; }
+.d3 .sc .v { font: 900 40px/1 "Archivo"; letter-spacing: -.03em; }
+.d3 .sc .v span { color: #0a7a3e; }
+.d3 .sc .v em { font-style: normal; color: #999; }
+
+/* ============ 4. CIVIC (plain, fastest) ============ */
+.d4 { background: #fff; color: #1b1b1b; font-family: "Public Sans", sans-serif; display: grid; }
+.d4 .gov { background: #1b1b1b; color: #fff; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; }
+.d4 .gov b { font-weight: 800; font-size: 17px; }
+.d4 .gov span { font-size: 13px; color: #ccc; }
+.d4 .body { padding: 16px; display: grid; gap: 14px; }
+.d4 .rt { font-weight: 700; font-size: 18px; line-height: 1.25; }
+.d4 .rt small { display: block; font-weight: 400; font-size: 14px; color: #555; }
+.d4 .ans { border-left: 8px solid #00a91c; background: #ecf3ec; padding: 14px 16px; }
+.d4 .ans b { display: block; font-weight: 800; font-size: 28px; line-height: 1.1; }
+.d4 .ans p { margin: 6px 0 0; font-size: 16px; line-height: 1.45; }
+.d4 table { width: 100%; border-collapse: collapse; font-size: 16px; }
+.d4 th, .d4 td { text-align: left; padding: 8px 0; border-bottom: 1px solid #dfe1e2; }
+.d4 th { font-size: 13px; color: #555; font-weight: 600; }
+.d4 td:not(:first-child), .d4 th:not(:first-child) { text-align: right; }
+.d4 td b { font-weight: 700; }
+.d4 .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.d4 .btns span { padding: 12px; text-align: center; font-weight: 700; border-radius: 4px; background: #005ea2; color: #fff; }
+.d4 .btns span + span { background: #fff; color: #005ea2; box-shadow: inset 0 0 0 2px #005ea2; }
+.d4 h4 { margin: 4px 0 0; font-size: 20px; font-weight: 800; }
+.d4 .sum { display: grid; gap: 0; font-size: 16px; }
+.d4 .sum div { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #dfe1e2; }
+.d4 .sum b { font-weight: 700; }
+
+/* ============ 5. DASHBOARD (car instrument) ============ */
+.d5 { background: #121315; color: #e9eaec; font-family: "IBM Plex Sans Condensed", sans-serif; padding: 18px 18px 20px; display: grid; gap: 14px; }
+.d5 .top { display: flex; justify-content: space-between; font-size: 13px; color: #8d9097; }
+.d5 .top b { color: #e9eaec; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+.d5 .rt { font-size: 18px; font-weight: 600; }
+.d5 .rt small { display: block; font-size: 13px; color: #8d9097; font-weight: 400; }
+.d5 .gauge { display: grid; justify-items: center; position: relative; padding-top: 4px; }
+.d5 .gauge svg { width: 230px; height: auto; }
+.d5 .gauge .read { position: absolute; top: 58px; text-align: center; }
+.d5 .gauge .read b { display: block; font: 600 46px/1 "IBM Plex Mono"; letter-spacing: -.02em; }
+.d5 .gauge .read span { font-size: 13px; color: #8d9097; }
+.d5 .verdict { text-align: center; font-weight: 600; font-size: 24px; letter-spacing: .14em; text-transform: uppercase; color: #3ddc84; margin-top: -6px; }
+.d5 .cells { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: #2a2c30; border-radius: 10px; overflow: hidden; }
+.d5 .cells div { background: #1a1b1e; padding: 10px; font-size: 11.5px; color: #8d9097; text-transform: uppercase; letter-spacing: .06em; }
+.d5 .cells b { display: block; font: 600 22px/1.1 "IBM Plex Mono"; color: #e9eaec; text-transform: none; letter-spacing: 0; margin-top: 3px; }
+.d5 .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.d5 .btns span { border-radius: 10px; padding: 12px; text-align: center; font-weight: 600; background: #23252a; }
+.d5 .btns span:first-child { background: #3ddc84; color: #0b1a11; }
+.d5 .sc { border-top: 1px solid #2a2c30; padding-top: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.d5 .sc div { font-size: 12px; color: #8d9097; text-transform: uppercase; letter-spacing: .06em; }
+.d5 .sc b { display: block; font: 600 26px/1.1 "IBM Plex Mono"; color: #3ddc84; text-transform: none; letter-spacing: -.01em; }
+.d5 .sc .t b { color: #6cb4ff; }
+
+/* ============ 6. SIBLING (matches Is There School?) ============ */
+.d6 { background: #f1f3f6; color: #14171c; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif; display: grid; }
+.d6 .hdr { background: #fff; border-bottom: 1px solid #e3e6eb; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; }
+.d6 .logo { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 16px; }
+.d6 .logo i { width: 26px; height: 26px; border-radius: 7px; background: #0c2340; display: grid; place-items: center; color: #ffc20e; font-style: normal; font-weight: 800; font-size: 14px; }
+.d6 .hdr > span:last-child { font-size: 14px; color: #1d5bd8; font-weight: 600; }
+.d6 .body { padding: 14px 14px 18px; display: grid; gap: 12px; }
+.d6 .panel { background: #17694a; color: #fff; border-radius: 20px; padding: 20px 18px 16px; display: grid; gap: 6px; }
+.d6 .panel .t { font-size: 15px; font-weight: 600; opacity: .92; }
+.d6 .panel b { font-size: 34px; line-height: 1.05; letter-spacing: -.02em; }
+.d6 .panel p { margin: 0; font-size: 16px; font-weight: 500; }
+.d6 .panel .ft { display: flex; justify-content: space-between; border-top: 1px solid rgba(255,255,255,.25); padding-top: 10px; margin-top: 6px; font-size: 14px; }
+.d6 .card { background: #fff; border-radius: 14px; padding: 4px 16px; }
+.d6 .card div { display: flex; justify-content: space-between; padding: 11px 0; border-top: 1px solid #e3e6eb; font-size: 15px; }
+.d6 .card div:first-child { border-top: 0; }
+.d6 .card b { font-weight: 600; }
+.d6 .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.d6 .btns span { background: #fff; border-radius: 12px; padding: 12px; text-align: center; font-weight: 600; border: 1px solid #e3e6eb; }
+.d6 .btns span:first-child { background: #0c2340; color: #fff; border-color: #0c2340; }
+.d6 h4 { margin: 6px 2px 0; font-size: 17px; }
+.d6 .two { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.d6 .two div { background: #fff; border-radius: 14px; padding: 12px 14px; font-size: 13px; color: #5b616c; }
+.d6 .two b { display: block; font-size: 26px; color: #14171c; letter-spacing: -.02em; }
+.d6 .wfl { display: flex; gap: 10px; align-items: center; font-size: 13px; color: #5b616c; padding: 2px 2px 0; }
+.d6 .wfl i { width: 28px; height: 28px; border-radius: 50%; background: #c9d3c3; flex: none; }
+</style>
+
+<div class="wrap">
+  <h1>Worth the Toll? Pick a direction</h1>
+  <p class="lede">Six looks, each showing the same two things: the answer for a saved morning trip, and the November scoreboard. The numbers are samples. Each one is built to be read at a glance, with no decoration you have to look past. Pick one, or mix parts ("the answer from 4, the scoreboard from 2").</p>
+
+  <div class="tells">
+    <div>
+      <h2>What makes a site look AI-built</h2>
+      <ul>
+        <li>Every block is a rounded white card with a soft shadow</li>
+        <li>Tiny gray uppercase labels above everything</li>
+        <li>Pills, chips and emoji (🔥) scattered around</li>
+        <li>Too many sections that all have equal weight</li>
+        <li>Gimmicks like the glowing LED sign</li>
+        <li>Default looks: purple gradients; cream with a serif and an orange accent (the look of Claude's own site, now copied everywhere); black with one neon green</li>
+      </ul>
+    </div>
+    <div>
+      <h2>What these do instead</h2>
+      <ul>
+        <li>One clear answer at the top, in the largest type on the screen</li>
+        <li>Numbers you can read from arm's length</li>
+        <li>Borrowed from places people already read quickly: road signs, transit apps, government forms, car dashboards</li>
+        <li>Few colors, each with one job (green means take it)</li>
+        <li>Fewer boxes: lines and spacing do the grouping</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 1 -->
+  <section class="dir">
+    <div>
+      <div class="dir__n">Direction 1</div>
+      <h2>Road sign</h2>
+      <p>The answer looks like the green sign you'd see over the highway. The type is Overpass, a cousin of the lettering on US highway signs. The toll sits in a black panel like the real price signs. Flat, high contrast, no shadows.</p>
+      <dl>
+        <dt>Why it reads fast</dt><dd>Drivers already know how to read highway signs in a second.</dd>
+        <dt>Watch out for</dt><dd>It can feel like a novelty if pushed too far. Keep the sign style to the answer and the scoreboard.</dd>
+      </dl>
+    </div>
+    <div class="phones">
+      <div><div class="ph"><div class="d1">
+        <div class="bar">Worth the Toll? <span>Tue 7:42 AM</span></div>
+        <div class="route"><span class="shield">66</span>Morning: Vienna to Rosslyn</div>
+        <div class="sign"><div>
+          <div class="big">Take it <svg viewBox="0 0 40 40" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 30 30 10M14 10h16v16"/></svg></div>
+          <div class="sub">Saves 14 min · 46¢ a minute</div>
+        </div></div>
+        <div class="toll"><span><small>EXPRESS LANES TO ROSSLYN</small>Toll now</span><b class="num">$6.50</b></div>
+        <div class="times"><div>Express<b class="num">19 min</b></div><div>Regular<b class="num">33 min</b></div></div>
+        <div class="btns"><span>I took it</span><span>I skipped it</span></div>
+      </div></div><div class="cap">The answer</div></div>
+      <div><div class="ph"><div class="d1">
+        <div class="score"><div>
+          <h4>November</h4>
+          <div><b class="num">$84</b><span>kept by skipping</span></div>
+          <div><b class="num">3h 10m</b><span>bought for $61</span></div>
+          <div class="row"><span>You paid per minute</span><span class="num">32¢</span></div>
+          <div class="row"><span>Smart calls</span><span class="num">19 of 22</span></div>
+          <div class="row"><span>Streak</span><span class="num">6 in a row</span></div>
+        </div></div>
+        <div class="bar" style="font-size:13px;font-weight:600;color:#444">Kept free by Walks for Lucy</div>
+      </div></div><div class="cap">The scoreboard</div></div>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section class="dir">
+    <div>
+      <div class="dir__n">Direction 2</div>
+      <h2>Departure board</h2>
+      <p>Built like the best transit apps: a short list with very big times. Express and regular sit side by side like two buses, and the winner is shaded. Each road gets its own color badge (I-66 orange, 495 blue, ICC purple).</p>
+      <dl>
+        <dt>Why it reads fast</dt><dd>You compare two big numbers, and the answer bar says what they mean.</dd>
+        <dt>Watch out for</dt><dd>Needs strict spacing to stay tidy as more roads and trips are added.</dd>
+      </dl>
+    </div>
+    <div class="phones">
+      <div><div class="ph"><div class="d2">
+        <div class="top"><b>Worth the Toll?</b><span>Tue 7:42 AM</span></div>
+        <div class="trip"><span class="badge">I-66 E</span><div>Vienna → Rosslyn<small>Morning</small></div></div>
+        <div class="board">
+          <div class="ln win"><span class="nm">Express<small>toll now</small></span><span class="pr num">$6.50</span><span class="mn num">19<small>min</small></span></div>
+          <div class="ln"><span class="nm">Regular<small>free</small></span><span class="pr num">$0</span><span class="mn num">33<small>min</small></span></div>
+        </div>
+        <div class="ans"><b>Take it</b><span class="num">14 min for $6.50<br>46¢ a minute</span></div>
+        <div class="btns"><span>I took it</span><span>I skipped it</span></div>
+      </div></div><div class="cap">The answer</div></div>
+      <div><div class="ph"><div class="d2">
+        <div class="sc" style="border-top:0">
+          <h4>November <span>Week · Month · Year · All</span></h4>
+          <div><b class="g num">$84</b><small>kept, 13 skips</small></div>
+          <div><b class="bl num">3h 10m</b><small>bought, 9 trips</small></div>
+          <div class="meta"><span class="num">32¢ a minute</span><span class="num">19 of 22 smart calls</span><span class="num">6 in a row</span></div>
+        </div>
+      </div></div><div class="cap">The scoreboard</div></div>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section class="dir">
+    <div>
+      <div class="dir__n">Direction 3</div>
+      <h2>Big type</h2>
+      <p>Swiss-poster style: black on white, one huge word, thick black rules, no boxes. The only color is the answer. Very confident and modern. It looks like a design studio made it.</p>
+      <dl>
+        <dt>Why it reads fast</dt><dd>The answer is the biggest thing on the screen by far. You can read it across a room.</dd>
+        <dt>Watch out for</dt><dd>It feels stark. It has less warmth, and the sponsor line has to fit the same strict style.</dd>
+      </dl>
+    </div>
+    <div class="phones">
+      <div><div class="ph"><div class="d3">
+        <div class="top"><b>Worth the Toll?</b><span>Tue 7:42</span></div>
+        <div class="rt"><b>Morning.</b> Vienna to Rosslyn, I-66 East</div>
+        <h3>Take it.</h3>
+        <div class="why">$6.50 saves 14 minutes. <span>46¢ a minute, under your 60¢.</span></div>
+        <div class="grid"><div>Toll<b class="num">$6.50</b></div><div>Express<b class="num">19m</b></div><div>Regular<b class="num">33m</b></div></div>
+        <div class="btns"><span>I took it</span><span>I skipped it</span></div>
+      </div></div><div class="cap">The answer</div></div>
+      <div><div class="ph"><div class="d3">
+        <div class="top"><b>November</b><span>Week Month Year All</span></div>
+        <div class="sc"><div class="k">Kept by skipping <b>13 trips</b></div><div class="v num"><span>$84</span></div></div>
+        <div class="sc"><div class="k">Bought by taking it <b>9 trips · $61</b></div><div class="v num">3h 10m</div></div>
+        <div class="sc"><div class="k">Per minute <b>your line 60¢</b></div><div class="v num">32¢ <em>avg</em></div></div>
+        <div class="sc"><div class="k">Smart calls <b>6 in a row</b></div><div class="v num">19/22</div></div>
+      </div></div><div class="cap">The scoreboard</div></div>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section class="dir">
+    <div>
+      <div class="dir__n">Direction 4</div>
+      <h2>Plain and official</h2>
+      <p>Based on the US government's web design system, which is built to be read fast by everyone, including on old phones and in bright sun. Plain black text, one colored bar for the answer, real tables, real buttons. It feels trustworthy, like the toll authority should have built it.</p>
+      <dl>
+        <dt>Why it reads fast</dt><dd>Nothing to decode. Every number is labeled in plain words.</dd>
+        <dt>Watch out for</dt><dd>It can look like a government page. It would need a strong logo and a little warmth to feel like its own site.</dd>
+      </dl>
+    </div>
+    <div class="phones">
+      <div><div class="ph"><div class="d4">
+        <div class="gov"><b>Worth the Toll?</b><span>DMV tolls</span></div>
+        <div class="body">
+          <div class="rt">Morning: Vienna to Rosslyn<small>I-66 East · Tuesday 7:42 AM</small></div>
+          <div class="ans"><b>Take the express lanes</b><p>$6.50 saves you 14 minutes. That's 46¢ a minute, under your 60¢ limit.</p></div>
+          <table class="num"><tr><th></th><th>Time</th><th>Toll</th></tr>
+            <tr><td><b>Express</b></td><td><b>19 min</b></td><td><b>$6.50</b></td></tr>
+            <tr><td>Regular</td><td>33 min</td><td>Free</td></tr></table>
+          <div class="btns"><span>I took it</span><span>I skipped it</span></div>
+        </div>
+      </div></div><div class="cap">The answer</div></div>
+      <div><div class="ph"><div class="d4">
+        <div class="body">
+          <h4>Your November</h4>
+          <div class="sum num">
+            <div><span>Money kept (13 skips)</span><b>$84</b></div>
+            <div><span>Time bought (9 trips)</span><b>3 h 10 min</b></div>
+            <div><span>Spent on tolls</span><b>$61</b></div>
+            <div><span>Average per minute</span><b>32¢</b></div>
+            <div><span>Smart calls</span><b>19 of 22</b></div>
+            <div><span>Current streak</span><b>6</b></div>
+          </div>
+        </div>
+      </div></div><div class="cap">The scoreboard</div></div>
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section class="dir">
+    <div>
+      <div class="dir__n">Direction 5</div>
+      <h2>Dashboard</h2>
+      <p>Dark, like a modern car's screen. The main reading is a gauge: your cost per minute, with your limit marked on the dial. It looks great at night and in the car.</p>
+      <dl>
+        <dt>Why it reads fast</dt><dd>One dial and one word. The needle shows where you stand without any math.</dd>
+        <dt>Watch out for</dt><dd>Dark-only sites can look generic (black with a neon accent is a common AI look). It needs a light version for daytime and real restraint.</dd>
+      </dl>
+    </div>
+    <div class="phones">
+      <div><div class="ph"><div class="d5">
+        <div class="top"><b>Worth the Toll?</b><span>Tue 7:42 AM</span></div>
+        <div class="rt">Vienna → Rosslyn<small>Morning · I-66 East</small></div>
+        <div class="gauge">
+          <svg viewBox="0 0 230 130" aria-hidden="true">
+            <path d="M20 120 A95 95 0 0 1 210 120" fill="none" stroke="#2a2c30" stroke-width="12" stroke-linecap="round"/>
+            <path d="M20 120 A95 95 0 0 1 98 27" fill="none" stroke="#3ddc84" stroke-width="12" stroke-linecap="round"/>
+            <line x1="141" y1="22" x2="137" y2="38" stroke="#e9eaec" stroke-width="3"/>
+            <text x="148" y="16" fill="#8d9097" font-size="11" font-family="IBM Plex Sans Condensed">your 60¢</text>
+          </svg>
+          <div class="read"><b class="num">46¢</b><span>per minute saved</span></div>
+        </div>
+        <div class="verdict">Take it</div>
+        <div class="cells"><div>Toll<b class="num">$6.50</b></div><div>Saves<b class="num">14m</b></div><div>Express<b class="num">19m</b></div></div>
+        <div class="btns"><span>I took it</span><span>I skipped it</span></div>
+      </div></div><div class="cap">The answer</div></div>
+      <div><div class="ph"><div class="d5">
+        <div class="top"><b>November</b><span>Month ▾</span></div>
+        <div class="sc" style="border-top:0;padding-top:0">
+          <div>Kept<b class="num">$84</b></div>
+          <div class="t">Bought<b class="num">3:10</b></div>
+        </div>
+        <div class="cells"><div>Avg/min<b class="num">32¢</b></div><div>Smart<b class="num">19/22</b></div><div>Streak<b class="num">6</b></div></div>
+      </div></div><div class="cap">The scoreboard</div></div>
+    </div>
+  </section>
+
+  <!-- 6 -->
+  <section class="dir">
+    <div>
+      <div class="dir__n">Direction 6</div>
+      <h2>Sister site</h2>
+      <p>Uses the same look as Is There School?: the same fonts, header, rounded colored answer panel (green means take it, like green means school's open), and navy. People who use one would recognize the other right away.</p>
+      <dl>
+        <dt>Why it reads fast</dt><dd>It's a proven layout. The colored panel answers before you read a word.</dd>
+        <dt>Watch out for</dt><dd>It's the safest choice, not the most distinctive. It inherits some of the card-heavy feel.</dd>
+      </dl>
+    </div>
+    <div class="phones">
+      <div><div class="ph"><div class="d6">
+        <div class="hdr"><span class="logo"><i>$</i>Worth the Toll?</span><span>My trips</span></div>
+        <div class="body">
+          <div class="panel">
+            <span class="t">Morning · Vienna to Rosslyn on I-66</span>
+            <b>Take it</b>
+            <p>$6.50 saves 14 min (46¢ a minute)</p>
+            <div class="ft num"><span>Express 19 min</span><span>Regular 33 min</span></div>
+          </div>
+          <div class="btns"><span>I took it</span><span>I skipped it</span></div>
+          <div class="card num"><div><span>Usually at this time</span><b>$8.00</b></div><div><span>Leave at 8:30</span><b>about $4.25</b></div></div>
+        </div>
+      </div></div><div class="cap">The answer</div></div>
+      <div><div class="ph"><div class="d6">
+        <div class="body">
+          <h4>November</h4>
+          <div class="two num"><div><b>$84</b>kept by skipping</div><div><b>3h 10m</b>bought for $61</div></div>
+          <div class="card num"><div><span>Per minute (your line 60¢)</span><b>32¢</b></div><div><span>Smart calls</span><b>19 of 22</b></div><div><span>Streak</span><b>6 in a row</b></div></div>
+          <div class="wfl"><i></i>Kept free by Anissa of Walks for Lucy</div>
+        </div>
+      </div></div><div class="cap">The scoreboard</div></div>
+    </div>
+  </section>
+
+  <div class="end">
+    <h2>My pick</h2>
+    <p><b>2 (Departure board)</b> for everyday use, with the answer line from <b>4</b>. It's the quickest to compare and the easiest to grow to more roads, and it doesn't look like a template. <b>1 (Road sign)</b> is the most memorable if you want the site to have a strong identity.</p>
+    <p>Tell me a number, or which parts to mix, and I'll rebuild the clickable mockup in that style.</p>
+  </div>
+</div>
