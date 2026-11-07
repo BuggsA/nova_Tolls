@@ -1,4 +1,6 @@
-# Worth the Toll? · Northern Virginia (working name)
+# Worth the Toll? · DMV (working name)
+
+Covers the whole DMV: DC, Maryland and Virginia toll roads in one place.
 
 **One line:** save your drive once. Every morning, open it and see the toll right now, how many minutes the
 express lanes save, what that works out to per minute, and a plain answer: **take it** or **skip it**.
@@ -190,11 +192,16 @@ how many visits the toll site sends, just like the schools site's links. Reuse `
 | **I-66 Outside the Beltway** (Beltway ↔ Gainesville) | I-66 Express Mobility Partners | Changes with traffic | Toll all the time. |
 | **495 Express** | Transurban | Changes with traffic | |
 | **95 / 395 Express** | Transurban | Changes with traffic | Reversible: direction depends on time of day. Priced by zone. |
+| **ICC (MD 200)** | MDTA | Set by time of day | "Worth it" compares against the best free route on local roads (needs a routing source). |
+| **I-95 Express Toll Lanes** (Baltimore) | MDTA | Set by time of day | Regular lanes alongside, so it works like the Virginia express lanes. |
+| Bay Bridge, Fort McHenry / Harbor tunnels, Key Bridge replacement | MDTA | Fixed | Price table only. |
+| **I-495 / I-270 (Maryland)** | MDOT | Planned | Add if and when toll lanes open. |
 | Dulles Toll Road | MWAA | Fixed | Phase 2: simple price table, no "worth it" (no free lanes next to it). |
 | Dulles Greenway | Private | Fixed peak / off-peak | Phase 2, same. |
 
 **Start with I-66 inside and outside.** That's the most commuters and the most toll headlines.
-Then 495 and 95/395.
+Then 495 and 95/395, then Maryland (ICC and the I-95 Express Toll Lanes, whose prices are published schedules, so the toll side is easy).
+DC itself has no toll roads, but DC drivers use all of these; the site and its pages speak to the whole DMV.
 
 ---
 
@@ -251,7 +258,7 @@ HOV toggle, "free right now" for I-66 inside off-peak, trip pages, share cards, 
 totals by week, month, year and all time, averages, smart calls), saved on the server with no sign-in, the quiet
 "keep them safe" passkey / email option, and the Walks for Lucy footer and sponsor strip. Start recording history on day one.
 
-**2. More roads + history.** 495, 95/395. "Usually at this time," best time to leave, monthly cost, record-toll page.
+**2. More roads + history.** 495, 95/395, Maryland (ICC, I-95 Express Toll Lanes). "Usually at this time," best time to leave, monthly cost, record-toll page.
 
 **3. Alerts + rewards.** Price alerts on saved trips (port the push code from the schools site). Milestones,
 streaks, and the first Year in review in December.
