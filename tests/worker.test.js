@@ -32,3 +32,12 @@ test('a failed feed leaves the last good prices alone', async () => {
   assert.equal(bad.ok, false);
   assert.ok(await env.TOLLS.get('i66:latest', 'json'));
 });
+
+import { signsWithPrices } from '../src/feeds/signs.js';
+test('sign check finds I-66 price messages and ignores the rest', () => {
+  const xml = `<data><dms id="1"><road>I-66 EB</road><msg>EXPRESS LANES[nl]TO I-495 $4.25</msg></dms>
+    <dms id="2"><road>I-95 NB</road><msg>EXPRESS $6.10</msg></dms><dms id="3"><road>I-66 WB</road><msg>CRASH AHEAD</msg></dms></data>`;
+  const r = signsWithPrices(xml);
+  assert.equal(r.tag, 'dms'); assert.equal(r.total, 3);
+  assert.equal(r.matches.length, 1); assert.match(r.matches[0], /\$4\.25/);
+});

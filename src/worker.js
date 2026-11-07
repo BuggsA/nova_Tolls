@@ -2,6 +2,7 @@
 // Every 5 minutes (cron) it fetches the live toll feeds, keeps the newest prices in KV for visitors,
 // and adds every new interval to the D1 history (for "usually at this time" and price forecasts).
 import { parseI66, tripStatus, I66_ZONES } from './feeds/i66.js';
+import { signsWithPrices } from './feeds/signs.js';
 
 const json = (data, status = 200) => new Response(JSON.stringify(data, null, 2), {
   status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'public, max-age=60' },
@@ -42,6 +43,13 @@ export default {
           status: tripStatus(latest, t.dir, t.from, t.to, now) };
       });
       return json({ interval: latest.interval, fetchedAt: latest.fetchedAt, trips });
+    }
+    // One-off check for I-66 outside the Beltway: sign messages on I-66 that show a price. Set SR_DMS_URL first.
+    if (url.pathname === '/api/signs') {
+      if (!env.SR_DMS_URL) return json({ error: 'Set the SR_DMS_URL secret first.' }, 503);
+      const res = await fetch(env.SR_DMS_URL, { cf: { cacheTtl: 0 } });
+      if (!res.ok) return json({ error: `Sign feed answered ${res.status}` }, 502);
+      return json(signsWithPrices(await res.text(), url.searchParams.get('road') || '66'));
     }
     if (url.pathname === '/api/status') {
       const latest = await env.TOLLS.get('i66:latest', 'json');

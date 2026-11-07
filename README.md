@@ -36,3 +36,12 @@ It's stored encrypted in Cloudflare and never appears in the code or chat.
 npm run deploy
 ```
 Within 5 minutes, `https://worth-the-toll.<your-account>.workers.dev/api/i66` shows the live prices.
+
+## Check the road signs for I-66 outside the Beltway prices (one time)
+Opening the sign feed in a browser crashes the tab: it's one huge file. Let the Worker read it instead:
+
+```bash
+npx wrangler secret put SR_DMS_URL
+```
+Paste the full "DMS Status (Active)" feed link from SmarterRoads (token included), then `npm run deploy` and open
+`https://worth-the-toll.<your-account>.workers.dev/api/signs`. It lists only I-66 signs showing a price, if any.
