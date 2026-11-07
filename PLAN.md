@@ -88,17 +88,81 @@ Each choice counts one of two ways:
 Honest numbers: each log uses the toll and travel times **when you checked**, and the screen says they're
 estimates. If you check at 7:40 and log at 8:05, it uses the 7:40 numbers, because that's when you decided.
 
-Stored in the browser like saved trips, no account. Later: an **export / move to a new phone** code (a short link that
-copies your history), so people don't lose a year of stats when they switch phones.
+Saved automatically, with no sign-in. See "Your stats, saved without signing in" below.
 
 ### Setting up a trip (under 30 seconds, no map needed)
 1. Pick the road: **I-66 inside**, **I-66 outside**, **495**, **95**, **395**.
 2. Pick the direction (only the ones open now are highlighted; 95/395 reverse).
 3. Tap your entrance, tap your exit, from a short list of names people actually use ("Vienna / Nutley St",
    "Rosslyn"). Not a map.
-4. Name it (optional). **Save.** Kept in the browser like saved schools: no account.
+4. Name it (optional). **Save.** No account needed (see below).
 
 A shareable link for each trip (`/66-east/vienna-to-rosslyn`) means it also works from a bookmark or a home-screen icon.
+
+---
+
+## Your stats, saved without signing in
+
+Nobody is ever asked to sign in to use the site. Stats are still kept safe, and an account happens quietly in the background.
+
+**How it feels to the visitor**
+1. **Day one:** they save a trip and tap "I took it." That's all. Behind the scenes the site gives their browser a
+   random private ID and keeps their trips and stats **on the server** under that ID (plus a copy in the
+   browser so it opens instantly, even offline). No name, no email, no password.
+2. **Once it's worth protecting:** after about 10 logged trips or the first $25 kept, one quiet line appears at the
+   bottom of the scoreboard (never a pop-up):
+   > *Your stats: $31 kept, 2 h bought. **Keep them safe on any phone** →*
+3. Tapping it offers one-tap options, no password:
+   - **Face ID / fingerprint** (a passkey: the phone does the work, nothing to remember), or
+   - **Email me a link** (for older phones or a computer).
+   If they say "Not now," it hides for a month.
+4. **New phone or a laptop:** "Already saving? Get your stats" in the menu, then Face ID or the email link, and everything's there.
+   Trips logged on either device are merged.
+
+**Rules**
+- No usernames, profiles, names or passwords. An email, if given, is only for sign-in links (and alerts if they ask).
+- Signing in never unlocks extra features. It only keeps stats safe across devices. Everything works signed out.
+- **Delete everything** button in the menu: wipes the server copy and the browser copy at once.
+- Stats are private. Nothing about a person's trips is ever shown to anyone else (the share card shows only what they choose to share).
+
+**Why the server copy matters:** browsers clear site data (Safari can, after a week without a visit; people clear
+history; phones get replaced). Keeping only a browser copy, like the schools site does, would lose a year of stats.
+The anonymous ID is kept in a secure cookie set by the site, which browsers keep much longer than script storage.
+
+**How it's built:** Cloudflare D1 tables for `users` (anonymous ID, optional passkey / email), `trips` (saved trips)
+and `logs` (each took-it / skipped-it tap with the numbers at that moment). Passkeys with a standard WebAuthn library
+that runs on Workers; email links through Cloudflare's email sending or a small provider (a few cents a month at this scale).
+
+---
+
+## Kept free by Walks for Lucy
+
+Like the schools site, this one is kept running by **Anissa of [Walks for Lucy](https://walksforlucy.com)**. It should feel
+like a sponsor credit on a podcast, not an ad: friendly, small and the same every time, so people learn to recognize it.
+
+**Where it shows**
+- **Footer, every page:** Lucy's small round photo + *"Worth the Toll? is kept free by Anissa of Walks for Lucy:
+  dog walking and pet sitting in Reston, Vienna, Fairfax and Loudoun."*
+- **A sponsor strip on the scoreboard** (the screen people look at most):
+  > 🐾 *Scoreboard brought to you by **Walks for Lucy**. Long commute? Anissa does the midday walk.*
+
+  One line, Lucy's photo, a light card style that matches the site. No animation, no close button needed since
+  it never gets in the way.
+- **Year in review card:** a small "Kept free by Walks for Lucy" at the bottom of the share image, so every shared card
+  carries the credit.
+- **An occasional useful line, only for trips that start in Anissa's towns** (same rule as the schools site: helpful,
+  never a sales pitch). Examples:
+  - Heavy traffic and a long trip: *"Running late tonight? Walks for Lucy does evening walks in Vienna."*
+  - Before a holiday weekend: *"Driving out for Thanksgiving? Pet sitters book up early."*
+  - Milestone: *"10 hours bought back! Lucy would spend them on walks."*
+- **About page:** the same Anissa-and-Lucy story and photo as the schools site.
+
+**Never:** pop-ups, banners that cover anything, autoplay, "sponsored" interruptions before the answer. The verdict always
+comes first; the sponsor is below it.
+
+**Tracking:** every link carries `utm_source=worththetoll` (and which spot it came from), so Anissa can see in her analytics
+how many visits the toll site sends, just like the schools site's links. Reuse `src/anissa.js` from the schools site
+(towns, service area, link helper); the trip's entrance stands in for the school's location.
 
 ---
 
@@ -172,7 +236,7 @@ Same as the schools site, so it's quick to build and cheap to run:
 - One **Cloudflare Worker** renders every page; static CSS/JS in `public/`. No build step, no accounts.
 - **Cron trigger** every 5 minutes fetches prices and travel times and caches them for every visitor.
 - **D1** (Cloudflare's small database) for the price history; KV for the latest values and push subscriptions.
-- Saved trips, your line, HOV setting: **in the browser** (localStorage).
+- Saved trips, logs and stats: **D1** under an anonymous ID (passkey / email link optional), with a copy in the browser so it opens instantly.
 - Same design system as the schools site (colors, type, panel style), so they feel like siblings.
 - Cloudflare Web Analytics (no cookies), Search Console, sitemap.
 
@@ -184,12 +248,13 @@ Same as the schools site, so it's quick to build and cheap to run:
 
 **1. I-66 launch.** Inside + outside the Beltway. Trip setup, saved trips, verdict, cost per minute, your line,
 HOV toggle, "free right now" for I-66 inside off-peak, trip pages, share cards, **the scoreboard** (took it / skipped it,
-totals by week, month, year and all time, averages, smart calls). Start recording history on day one.
+totals by week, month, year and all time, averages, smart calls), saved on the server with no sign-in, the quiet
+"keep them safe" passkey / email option, and the Walks for Lucy footer and sponsor strip. Start recording history on day one.
 
 **2. More roads + history.** 495, 95/395. "Usually at this time," best time to leave, monthly cost, record-toll page.
 
 **3. Alerts + rewards.** Price alerts on saved trips (port the push code from the schools site). Milestones,
-streaks, the "move to a new phone" code, and the first Year in review in December.
+streaks, and the first Year in review in December.
 
 **4. Extras.** Dulles Toll Road / Greenway price tables, toll comparison pages ("Is the I-66 toll worth it?"), weekly email digest.
 
@@ -199,6 +264,6 @@ streaks, the "move to a new phone" code, and the first Year in review in Decembe
 
 1. **Name and domain.** Ideas: *Worth the Toll?*, *Toll or Not*, *Is It Worth It? (66)*. The schools site's
    question-style name works well; something like `worththetoll.com` fits the pattern (check if it's free).
-2. **Walks for Lucy:** same quiet footer mention as the schools site, or keep this one separate?
+2. **Walks for Lucy wording:** Anissa approves the footer line, the sponsor strip and the occasional lines (same as the schools site).
 3. **Default "your line":** 50¢ a minute ($30/hr). Too high or low for the audience?
 4. **Who registers for SmarterRoads** (and a TomTom/HERE developer key): needs a person with an email.
